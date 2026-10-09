@@ -6,20 +6,22 @@ import type { LabelCorrection } from '../types/scene'
 import { sameDetection } from '../services/labelCorrections'
 import { objectDisplayName } from '../services/objectNames'
 import { imagePoint, manualTagName, type ManualTag } from '../services/manualTags'
+import { detectionDismissed } from '../services/dismissedDetections'
 
-export function ImagePreview({ image, detections, onObjectSelect, selectedIndex, corrections = [], markersVisible = true, manualTags = [], onTagSelect, placingTag = false, onPlaceTag, onCancelTag }: { image: UploadedImage; detections: DetectedObject[]; onObjectSelect?: (object: DetectedObject, index: number) => void; selectedIndex?: number; corrections?: LabelCorrection[]; markersVisible?: boolean; manualTags?: ManualTag[]; onTagSelect?: (tag: ManualTag) => void; placingTag?: boolean; onPlaceTag?: (point: ManualTag['point']) => void; onCancelTag?: () => void }) {
+export function ImagePreview({ image, detections, dismissed = [], onObjectSelect, selectedIndex, corrections = [], markersVisible = true, manualTags = [], onTagSelect, placingTag = false, onPlaceTag, onCancelTag }: { image: UploadedImage; detections: DetectedObject[]; dismissed?: DetectedObject[]; onObjectSelect?: (object: DetectedObject, index: number) => void; selectedIndex?: number; corrections?: LabelCorrection[]; markersVisible?: boolean; manualTags?: ManualTag[]; onTagSelect?: (tag: ManualTag) => void; placingTag?: boolean; onPlaceTag?: (point: ManualTag['point']) => void; onCancelTag?: () => void }) {
   const placement = useRef<HTMLButtonElement>(null)
   const [cursor, setCursor] = useState({ x: .5, y: .5 })
   useEffect(() => { if (placingTag) placement.current?.focus() }, [placingTag])
   const width = image.element.naturalWidth
   const height = image.element.naturalHeight
   const labelFor = (object: DetectedObject) => corrections.find(item => sameDetection(item, object))?.label
+  const visibleDetections = detections.map((detection, index) => ({ detection, index })).filter(({ detection }) => !detectionDismissed(detection, dismissed))
   return (
     <figure>
       <div className="image-preview" style={{ '--image-ratio': width / height } as CSSProperties}>
         <img src={image.url} alt={`Uploaded image: ${image.name}`} />
-        {markersVisible && <><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${detections.length} object bounding boxes`}>
-          {detections.map((detection, index) => (
+        {markersVisible && <><svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${visibleDetections.length} object bounding boxes`}>
+          {visibleDetections.map(({ detection, index }) => (
             <rect key={index} x={detection.box.x} y={detection.box.y}
               width={detection.box.width} height={detection.box.height}
               fill="none" stroke="#c6f432" strokeWidth={selectedIndex === index ? '3' : '2'} vectorEffect="non-scaling-stroke">
@@ -27,9 +29,9 @@ export function ImagePreview({ image, detections, onObjectSelect, selectedIndex,
             </rect>
           ))}
         </svg>
-        {detections.map((detection, index) => (
+        {visibleDetections.map(({ detection, index }) => (
           <button key={index} className={'box-label detection-hotspot' + (selectedIndex === index ? ' is-focus' : '')} type="button" onClick={() => onObjectSelect?.(detection, index)}
-            aria-pressed={selectedIndex === index}
+            aria-pressed={selectedIndex === index} data-detection-index={index}
             aria-label={`Ask about ${objectDisplayName(detection, detections, corrections)}${labelFor(detection) ? ', named by you' : ', AI prediction'}`} style={{
             left: `${(detection.box.x + detection.box.width / 2) / width * 100}%`,
             top: `${(detection.box.y + detection.box.height / 4) / height * 100}%`,

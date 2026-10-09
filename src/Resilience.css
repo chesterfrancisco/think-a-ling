@@ -1,4 +1,23 @@
 .everyday-app.is-home .page-intro h1 { font-size: clamp(32px, 4.1vw, 55px); }
+.browser-ai-setup > summary { cursor: pointer; font-size: 14px; font-weight: 650; min-height: 28px; }
+.everyday-app .ask-heading .sheet-kicker { color: #704597; }
+.browser-ai-setup > summary svg { vertical-align: middle; margin-right: 6px; }
+.everyday-app .answer-actions { display: flex; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin: 16px 0 8px; }
+.everyday-app .answer-actions .save-discovery { margin: 0; flex: 1 1 120px; }
+.everyday-app .answer-actions > button, .everyday-app .answer-feedback button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; border-radius: 12px; min-height: 44px; padding: 10px 12px; margin: 0; color: #49365f; background: #e9def5; font-size: 13px; }
+.everyday-app .answer-actions > button { flex: 1 1 120px; }
+.everyday-app .answer-actions .save-discovery button { width: 100%; }
+.answer-feedback { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 12px 0; }
+.answer-feedback > span { flex-basis: 100%; color: #665971; font-size: 12px; }
+.everyday-app .answer-feedback button { background: transparent; border: 1px solid #c7b8db; font-size: 12px; }
+.everyday-app .answer-feedback button[aria-pressed=true] { background: #e0d1f4; border-color: #725295; }
+.answer-caution, .everyday-app .feedback-note { display: block; font-size: 12px; color: #62556e; line-height: 1.6; }
+.answer-evidence > summary, .earlier-questions > summary, .earlier-questions > details > summary { cursor: pointer; min-height: 44px; padding: 10px 0; font-size: 13px; }
+.earlier-questions > details { border-bottom: 1px solid #e1d8ed; }
+.everyday-app .object-detail-card .remove-detection { display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; border-radius: 12px; margin: 0 0 10px 12px; min-height: 44px; font-size: 12px; }
+.removed-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; width: 100%; color: #e4dcef; font-size: 13px; }
+.removed-tags .undo-tag { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; padding: 10px 14px; background: #ebe2f8; color: #49365f; border-radius: 12px; }
+.demo-guide summary { min-height: 44px; padding: 10px 0; }
 .everyday-app .site-header { height: auto; min-height: 82px; margin-top: 18px; padding: 16px 22px; border: 1px solid #604488; border-radius: 24px; background: linear-gradient(115deg, #292137, #563887); color: #fff; gap: 18px; }
 .everyday-app .site-header .brand { color: #fff; }
 .everyday-app .site-header .brand-bang { color: #c7f34b; }

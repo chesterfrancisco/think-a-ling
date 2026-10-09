@@ -31,6 +31,7 @@ import { pocketFromScene } from './services/pockets'
 import { ModeChoices } from './components/ModeChoices'
 import { SettingsPanel } from './components/SettingsPanel'
 import { useAnswerLanguage } from './services/preferences'
+import { detectionDismissed } from './services/dismissedDetections'
 import { PhotoEditor } from './components/PhotoEditor'
 import { TextWorkbench } from './components/TextWorkbench'
 import './Resilience.css'
@@ -46,6 +47,7 @@ function App() {
   const [showStory, setShowStory] = useState(() => !hasSeenStory())
   const [showSplash, setShowSplash] = useState(true)
   const [corrections, setCorrections] = useState<LabelCorrection[]>([])
+  const [dismissedTags, setDismissedTags] = useState<DetectedObject[]>([])
   const [manualTags, setManualTags] = useState<ManualTag[]>([])
   const [placingTag, setPlacingTag] = useState(false)
   const [tagDraft, setTagDraft] = useState<ManualTag>()
@@ -131,7 +133,7 @@ function App() {
     setObjectFocus(undefined)
     setMarkersVisible(true)
     setDismissedSummaryId(undefined)
-    setCorrections([])
+    setCorrections([]); setDismissedTags([])
     setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
@@ -220,7 +222,7 @@ function App() {
     setImage(undefined)
     setObjectFocus(undefined)
     setMarkersVisible(true)
-    setCorrections([])
+    setCorrections([]); setDismissedTags([])
     setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
@@ -248,7 +250,7 @@ function App() {
     setCameraOpen(false)
     setLoadingImage(false)
     setSceneBuilding(false)
-    setCorrections([])
+    setCorrections([]); setDismissedTags([])
     setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
@@ -324,7 +326,28 @@ function App() {
   function closeObject() {
     const index = selectedIndex
     setSelectedIndex(undefined)
-    requestAnimationFrame(() => viewfinder.current?.querySelectorAll<HTMLButtonElement>('.detection-hotspot')[index ?? 0]?.focus({ preventScroll: true }))
+    requestAnimationFrame(() => viewfinder.current?.querySelector<HTMLButtonElement>(`[data-detection-index="${index ?? 0}"]`)?.focus({ preventScroll: true }))
+  }
+
+  function updateRemovedTags(next: DetectedObject[]) {
+    setDismissedTags(next)
+    setObjectAnswers({})
+    setGoalRequest(undefined)
+    setObjectFocus(undefined)
+    setSelectedIndex(undefined)
+  }
+
+  function removeDetection(object: DetectedObject) {
+    if (busy || detectionDismissed(object, dismissedTags)) return
+    updateRemovedTags([...dismissedTags, object])
+    requestAnimationFrame(() => viewfinder.current?.querySelector<HTMLButtonElement>('.undo-tag')?.focus({ preventScroll: true }))
+  }
+
+  function undoRemovedTag() {
+    const restored = dismissedTags.at(-1)
+    updateRemovedTags(dismissedTags.slice(0, -1))
+    const index = detection.data.findIndex(item => restored && sameDetection({ originalLabel: restored.label, box: restored.box }, item))
+    requestAnimationFrame(() => viewfinder.current?.querySelector<HTMLButtonElement>(`[data-detection-index="${index}"]`)?.focus({ preventScroll: true }))
   }
 
   if (showSplash || showStory) return <LingStory startWithSplash={showSplash} skipStory={!showStory} onDone={() => { setShowStory(false); setShowSplash(false) }} />
@@ -361,7 +384,7 @@ function App() {
         {cameraOpen && <LiveCamera markersVisible={markersVisible} processing={loadingImage} onClose={goHome} onCapture={(file, object) => { if (object) setMode('EXPLORE'); void selectImage(file, true, object) }} />}
         <div ref={photoFrame} className="image-stage" hidden={cameraOpen}>
           {image && <div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Exit fullscreen photo" onClick={() => void document.exitFullscreen()}><X size={21} /> Close</button></div>}
-          {image ? <ImagePreview image={image} detections={detection.data} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
+          {image ? <ImagePreview image={image} detections={detection.data} dismissed={dismissedTags} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
             manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <div className="welcome">
             <div className="welcome-copy"><span className="welcome-number">01 / START WITH A PHOTO</span>
             <h2>Start with <br />what’s here<span>.</span></h2>
@@ -369,6 +392,13 @@ function App() {
             <div className="start-actions"><button className="primary" aria-label="Use camera" disabled={busy} onClick={startCamera}><Camera size={22} /> Open camera <ArrowUpRight size={20} /></button>
             <button className="upload-btn" aria-label="Upload a photo" disabled={busy} onClick={() => fileInput.current?.click()}><ImageUp size={20} /> Choose a photo</button></div>
             <span className="welcome-note"><ShieldCheck size={16} /> No account needed. Photos stay on your device.</span>
+            <details className="demo-guide"><summary>First time? Try a study task.</summary><button disabled={busy} onClick={() => void (async () => {
+              try {
+                const response = await fetch('/demo/study-notes.png', { signal: AbortSignal.timeout(15000) })
+                if (!response.ok) throw new Error('The example is unavailable. Choose your own photo or try again.')
+                await selectImage(new File([await response.blob()], 'example-study-notes.png', { type: 'image/png' }))
+              } catch (error) { setImageError(errorMessage(error)) }
+            })()}>Try example study notes</button></details>
             </div>
             <div className="mascot-welcome"><div className="mascot-orbit"><Mascot /></div><span className="mascot-greeting">Hi, I’m Ling!</span><p>A little perspective. A useful next step.</p></div>
           </div>}
@@ -382,7 +412,7 @@ function App() {
         </div>
         {image && <div className="photo-actions">
           {placingTag && <div className="tag-placement-help" role="status"><p id="tag-placement-help">Tap the missed person or object, then give it a name. Keyboard: move the pin with arrow keys, then press Enter.</p><button onClick={() => setPlacingTag(false)}>Cancel tagging</button></div>}
-          {detection.status === 'loading' || ocr.status === 'loading' ? <div className="quick-progress" role="status"><span>{ocrProgress === undefined ? 'Noticing objects and reading text…' : `Reading text · ${ocrProgress}%`}</span>{ocrProgress !== undefined && <progress aria-label="Reading text" value={Number(ocrProgress)} max={100} />}<button onClick={cancelQuickScan}>Cancel scan</button></div> : <span className="photo-hint">{detection.data.length ? 'Tap a green dot to explore.' : localReasoningAvailable ? 'No objects found. You can still read text or ask about the photo.' : 'No objects found. Try a clearer photo, or read its text.'}</span>}
+          {detection.status === 'loading' || ocr.status === 'loading' ? <div className="quick-progress" role="status"><span>{ocrProgress === undefined ? 'Noticing objects and reading text…' : `Reading text · ${ocrProgress}%`}</span>{ocrProgress !== undefined && <progress aria-label="Reading text" value={Number(ocrProgress)} max={100} />}<button onClick={cancelQuickScan}>Cancel scan</button></div> : <span className="photo-hint">{detection.data.some(item => !detectionDismissed(item, dismissedTags)) ? 'Tap a green dot to explore.' : dismissedTags.length ? 'No tags shown. Undo a removal or add a tag.' : localReasoningAvailable ? 'No objects found. You can still read text or ask about the photo.' : 'No objects found. Try a clearer photo, or read its text.'}</span>}
           <div className="photo-buttons">
             <button disabled={loadingImage} className="change-photo" onClick={() => fileInput.current?.click()}><ImageUp size={17} /> Change photo</button>
             <button className="add-manual-tag" disabled={placingTag} onClick={beginTag}><MapPinPlus size={17} /> Add missing tag</button>
@@ -391,16 +421,18 @@ function App() {
             {!sceneSnapshot && <button className="photo-next" aria-label="Explore this photo" disabled={sceneBuilding} onClick={() => { setObjectFocus(undefined); setGoalRequest(undefined); openQuestion(); if (localReasoningAvailable) setAutoBuild(true) }}>{localReasoningAvailable ? 'Analyze photo' : 'Enable AI to analyze'} <ArrowRight size={18} /></button>}
           </div>
           {!!manualTags.length && <div className="manual-tag-list" aria-label="Your photo tags"><span>Added by you · {manualTags.length} {manualTags.length === 1 ? 'pin' : 'pins'}</span>{manualTags.map(tag => <button key={tag.id} onClick={() => editTag(tag)}>{manualTagName(tag, manualTags, detection.data, corrections)}</button>)}<small>Photo annotations, not AI detections. Tap to edit or remove.</small></div>}
+          {!!dismissedTags.length && <div className="removed-tags"><span role="status">{dismissedTags.length} {dismissedTags.length === 1 ? 'tag removed' : 'tags removed'} from this photo.</span><button className="undo-tag" disabled={busy} onClick={undoRemovedTag}><Undo2 size={16} /> Undo last removal</button></div>}
           {detection.status === 'error' && <p role="alert" className="error">{detection.message} Try scanning again.</p>}
           {sceneBuilding && !panelOpen && <button className="thinking-link" onClick={() => openQuestion()}>Understanding your photo... View progress</button>}
         </div>}
       {sceneSnapshot && <section ref={summary} tabIndex={-1} className="scene-summary" aria-label="Photo summary">
-        <Mascot /><div><span className="sheet-kicker">HERE'S THE PICTURE</span><p className="answer-ready">100% · Analysis complete</p><p className="scene-description">{sceneSnapshot.description}</p><small>AI interpretation. Check important details against your photo.</small>{corrections.length > 0 && <p className="correction-note">Your label changes apply to new questions. This description was written from the original photo.</p>}
+        <Mascot /><div><span className="sheet-kicker">HERE'S THE PICTURE</span><p className="answer-ready">100% · Analysis complete</p><p className="scene-description">{sceneSnapshot.description}</p><small>AI interpretation. Check important details against your photo.</small>{(corrections.length > 0 || dismissedTags.length > 0) && <p className="correction-note">Your tag changes apply to new questions. This description was written from the original photo.</p>}
         {!!sceneSnapshot.uncertainty.length && <details><summary>What is unclear?</summary>{sceneSnapshot.uncertainty.map((note, index) => <p key={index}>{note}</p>)}</details>}<SaveDiscovery draft={pocketFromScene(sceneSnapshot)} /></div>
       </section>}
         {selectedIndex !== undefined && detection.data[selectedIndex] && <ObjectCard key={discoveryKey(detection.data[selectedIndex])} detection={detection.data[selectedIndex]} index={selectedIndex}
           displayName={objectDisplayName(detection.data[selectedIndex], detection.data, corrections)}
           correction={corrections.find(item => sameDetection(item, detection.data[selectedIndex]))} onCorrect={label => correctLabel(detection.data[selectedIndex], label)} onReplace={() => fileInput.current?.click()}
+          onRemove={() => removeDetection(detection.data[selectedIndex])}
           scene={sceneSnapshot} response={objectAnswers[discoveryKey(detection.data[selectedIndex])]} ocr={ocr}
           onReadText={() => { textDialog.current?.showModal(); if (ocr.status !== 'done') void recognize() }} busy={busy} onClose={closeObject} onAction={(nextMode, text, submit) => {
             setMode(nextMode); setSelectedIndex(undefined); setPanelOpen(true)
@@ -413,7 +445,7 @@ function App() {
             detection.data.map((item, index) => discoveryKey(item) === goalRequest.objectKey ?
               <button key={index} className="discovery-return" onClick={() => selectObject(item, index)}>View {objectDisplayName(item, detection.data, corrections)} discovery <ArrowUpRight size={15} /></button> : null)}
           <ReasoningPanel key={image?.url ?? 'no-image'} image={image} mode={mode} goalRequest={goalRequest} autoBuild={autoBuild} corrections={corrections}
-            language={answerLanguage} onVoiceMode={setMode} visible={panelOpen} voiceRequest={voiceRequest}
+            language={answerLanguage} dismissed={dismissedTags} onVoiceMode={setMode} visible={panelOpen} voiceRequest={voiceRequest}
             objectFocus={objectFocus} objectLabel={objectFocus ? objectDisplayName(objectFocus, detection.data, corrections) : undefined}
             onSceneChange={setSceneSnapshot}
             onTurnComplete={(turn, key) => {
@@ -433,7 +465,7 @@ function App() {
       <footer><span>Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026</span></footer>
       {!image && !cameraOpen && <button className="replay-story" onClick={() => setShowStory(true)}>Meet Ling again</button>}
     </main>
-    <dialog ref={pictureDialog} className="picture-dialog" aria-label="Fullscreen photo" onClose={() => setPictureOpen(false)}><div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Close fullscreen photo" onClick={() => pictureDialog.current?.close()}><X size={22} /> Close</button></div>{pictureOpen && image && <ImagePreview image={image} detections={detection.data} corrections={corrections} markersVisible={markersVisible} selectedIndex={selectedIndex} onObjectSelect={selectObject} manualTags={manualTags} onTagSelect={editTag} />}</dialog>
+    <dialog ref={pictureDialog} className="picture-dialog" aria-label="Fullscreen photo" onClose={() => setPictureOpen(false)}><div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Close fullscreen photo" onClick={() => pictureDialog.current?.close()}><X size={22} /> Close</button></div>{pictureOpen && image && <ImagePreview image={image} detections={detection.data} dismissed={dismissedTags} corrections={corrections} markersVisible={markersVisible} selectedIndex={selectedIndex} onObjectSelect={selectObject} manualTags={manualTags} onTagSelect={editTag} />}</dialog>
     {tagDraft && <ManualTagEditor key={tagDraft.id} tag={tagDraft} existing={manualTags.some(tag => tag.id === tagDraft.id)} onClose={finishTagEdit}
       onSave={tag => { setManualTags(previous => previous.some(item => item.id === tag.id) ? previous.map(item => item.id === tag.id ? tag : item) : [...previous, tag]); finishTagEdit() }}
       onDelete={() => { setManualTags(previous => previous.filter(tag => tag.id !== tagDraft.id)); finishTagEdit() }} />}

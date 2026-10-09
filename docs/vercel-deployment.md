@@ -42,6 +42,7 @@ With production preview running, focused checks:
 node scripts/run-browser-check.mjs validate-resilience C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
 node scripts/run-browser-check.mjs validate-pockets-layout C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
 node scripts/run-browser-check.mjs validate-settings C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+node scripts/run-browser-check.mjs validate-simple-answers C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
 ```
 
 `validate-settings` also needs the existing local dev server on port 5173. It runs real detection/OCR and uses recorded model responses to verify that the language selected in Settings reaches the local reasoning request. This is not a language-accuracy test. Account suites are historical and should not run against the free UI. `validate-offline-reasoning` performs an actual model run and is optional when another hardware/model/offline regression check is needed; do not rerun it for copy changes.
@@ -73,7 +74,7 @@ Use the existing Think-a-ling project and `./` directory. The command publishes.
 
 ## Hosted acceptance checks
 
-1. Confirm the deployment shows the intended Git commit, purple navbar, Saved and Settings, with no account or study-example controls. A browser with an old service worker may need all site tabs closed before the new worker activates.
+1. Confirm the deployment shows the intended Git commit, purple navbar, Saved and Settings, with no account controls. **First time? Try a study task.** expands to the example button only. A browser with an old service worker may need all site tabs closed before the new worker activates.
 2. In a fresh browser, select a photo: real detection/OCR should work without an account or model download. Inspect hotspot evidence, change the photo, hide markers and try fullscreen. Camera capture must show review/retake before Analyze.
 3. Open Settings. Change answer language and accessibility preferences; close and reopen, then reload. Check that selections persist and that language controls are absent from the analysis card. Save/revisit/delete recognized text without signing in.
 4. Choose **Settings → Offline downloads → Prepare for offline**. Wait for ready. Disable browser networking and reload. Upload study notes and another photo, save/revisit text, crop/rotate and rescan. Core pack is about 75 MiB.
@@ -85,9 +86,10 @@ Use the existing Think-a-ling project and `./` directory. The command publishes.
 
 The 2026-10-10 free-app revision passes build, lint, 53 unit tests and focused Chrome 153 browser checks. Tested: navbar at 1440/390/320px, centered Ling, local save/reopen/delete, persistent accessibility/language settings, keyboard focus restoration, no language selector in the analysis card, and Filipino/English preferences reaching local reasoning request prompts using recorded responses. The complete offline reload/OCR/edit/rescan/404 suite passes with zero Axe violations across home, Settings, Settings with larger text, OCR/recall and photo editor. The production camera/upload/hotspot smoke also passes. No Supabase SDK or public key is present in the application bundle; no account requests occurred. These checks do not establish model language fluency.
 
-Historical baseline: commit `9e4df8e` reached Ready on the production alias and passed its then-active account-form/OCR/offline/404 smoke. Its account form and example button are now removed. The revised public test is reproducible with `node scripts/run-browser-check.mjs validate-hosted <playwright-path>`.
+Historical baseline: commit `9e4df8e` reached Ready on the production alias and passed its then-active account-form/OCR/offline/404 smoke. Its account form is now removed; the example button is retained without the extra instructions. The revised public test is reproducible with `node scripts/run-browser-check.mjs validate-hosted <playwright-path>`.
 
-- Build and lint pass; **53 unit tests** pass. Removing the active account SDK reduced the minified main bundle from about 742 KB to 520 KB. A >500 KB chunk warning remains.
+- Latest answer/tag refinement: build and lint pass; **55 unit tests** pass. The production main bundle is about 524 KB; a >500 KB chunk warning remains.
+- `validate-simple-answers` runs real example OCR and object detection. It verifies label editing, exact-tag removal/Undo, fullscreen, photo reset, cancelled stale answers, next-prompt rejection notes, collapsible AI status/evidence/history, save/feedback/Ask again and responsive layouts. The vision worker is simulated for these UI lifecycle checks, not used as evidence of model quality. The answer screen has zero Axe violations in the tested viewport.
 - Production smoke: actual four-animal detections, real English OCR, boxes/hotspots at 1280/390/320px; file-backed camera live fullscreen, capture/review/retake and track cleanup; no unexpected external requests, image uploads or page errors.
 - Resilience: full offline reload, new-image detection/OCR, uploaded study-note flow, text search/recall/save/revisit, crop/rotate/rescan, HTTP 404 fallback and persisted accessibility preference pass.
 - Actual cached SmolVLM image inference and a follow-up completed offline. An overly generic answer was observed and is now rejected by a unit-tested guard. This does not establish consistent answer quality or multilingual accuracy.

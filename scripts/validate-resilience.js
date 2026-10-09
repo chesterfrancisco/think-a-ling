@@ -20,7 +20,7 @@ export default async function validateResilience(page) {
     }
     await tab.setViewportSize({ width: 1440, height: 1000 })
     assert.equal(await tab.getByRole('button', { name: 'Account', exact: true }).count(), 0)
-    assert.equal(await tab.locator('.demo-guide, main .offline-setup, main .accessibility-settings').count(), 0)
+    assert.equal(await tab.locator('.demo-guide p, .demo-guide ol, main .offline-setup, main .accessibility-settings').count(), 0)
     await audit('free home')
     await tab.getByRole('button', { name: 'Settings', exact: true }).click()
     await tab.getByLabel('Answer language', { exact: true }).selectOption('Filipino')
@@ -72,7 +72,8 @@ export default async function validateResilience(page) {
     assert.equal(missing.status(), 404)
     assert.match(await tab.locator('h1').innerText(), /can’t find/)
     await tab.getByRole('link', { name: 'Back to Think-a-ling' }).click(); await dismissStory(tab)
-    await tab.locator('input[type=file]').setInputFiles('public/demo/study-notes.png'); await ready()
+    await tab.locator('.demo-guide summary').click()
+    await tab.getByRole('button', { name: 'Try example study notes', exact: true }).click(); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)

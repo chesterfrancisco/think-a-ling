@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ArrowUpRight, AudioLines, BookOpen, Focus, Leaf, ScanText, X } from 'lucide-react'
+import { ArrowUpRight, AudioLines, BookOpen, Focus, Leaf, ScanText, Trash2, X } from 'lucide-react'
 import type { DetectedObject } from '../services/objectDetection'
 import type { LabelCorrection, SceneAnalysis, SceneTurn } from '../types/scene'
 import type { ReasoningMode } from '../services/reasoning'
@@ -21,9 +21,10 @@ interface Props {
   correction?: LabelCorrection
   onCorrect: (label: string | null) => void
   onReplace: () => void
+  onRemove: () => void
 }
 
-export function ObjectCard({ detection, index, displayName, scene, response, ocr, busy, onClose, onReadText, onAction, correction, onCorrect, onReplace }: Props) {
+export function ObjectCard({ detection, index, displayName, scene, response, ocr, busy, onClose, onReadText, onAction, correction, onCorrect, onReplace, onRemove }: Props) {
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [editing, setEditing] = useState(false)
@@ -52,6 +53,7 @@ export function ObjectCard({ detection, index, displayName, scene, response, ocr
       <p className="object-read">{correction ? `Named by you. The AI originally guessed ${detection.label}.` : `This could be a ${detection.label}. Does that look right?`}</p>
       <p className="detection-confidence">{(detection.confidence * 100).toFixed(1)}% model confidence{correction ? ` in the original “${detection.label}” guess` : ''}<small>Not an accuracy rate. Objects can be missed or misidentified.</small></p>
       <button className="correct-label" disabled={busy} onClick={() => { setEditing(value => !value); setLabelError('') }}>{editing ? 'Cancel label edit' : correction ? 'Edit your label' : 'Correct this label'}</button>
+      <button className="remove-detection danger-action" disabled={busy} onClick={onRemove}><Trash2 size={15} /> Remove tag</button>
       {editing && <form className="label-editor" onSubmit={event => {
         event.preventDefault()
         try { onCorrect(String(new FormData(event.currentTarget).get('label') ?? '')); setEditing(false); setLabelError('') }

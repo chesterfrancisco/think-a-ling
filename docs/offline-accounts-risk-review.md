@@ -1,6 +1,6 @@
 # Offline, accounts, accessibility and risk review
 
-**2026-10-10 free-app update:** login/registration and cross-device history have been removed from the active app at the owner's request. Account code/migrations and existing backend data are retained; the app no longer initializes the SDK or makes account requests. Account validation below is historical, not a current feature claim. Accessibility and language controls, plus optional offline preparation, now live in navbar **Settings**. The study sample button has been removed; upload a note instead.
+**2026-10-10 free-app update:** login/registration and cross-device history have been removed from the active app at the owner's request. Account code/migrations and existing backend data are retained; the app no longer initializes the SDK or makes account requests. Account validation below is historical, not a current feature claim. Accessibility and language controls, plus optional offline preparation, now live in navbar **Settings**. The study sample button is retained under **First time? Try a study task.**, without the instructional paragraphs. Users can edit or remove incorrect detected tags and undo removals; the raw scene is preserved and excluded tags cannot supply detection evidence to new questions.
 
 Updated 2026-10-10. This is the current status; earlier milestone reports describe earlier builds.
 
@@ -50,7 +50,7 @@ Target user: **a student revisiting short printed English notes with unreliable 
 While online, build/deploy and choose **Settings → Offline downloads → Prepare for offline**. Wait for ready (about 75 MiB, app/detection/OCR/fonts/example). Optional SmolVLM needs another approximately 374 MB and compatible WebGPU hardware. Prepare and verify both before the demo if you plan to use model reasoning. Keep a typed-input route available; do not depend on experimental speech.
 
 1. Turn browser networking off and reload the page.
-2. Choose a photo of your short English study notes (developers can upload `public/demo/study-notes.png`). This runs real OCR; it does not replay a prepared answer.
+2. Choose **First time? Try a study task. → Try example study notes**, or upload your short English notes. This runs real OCR; it does not replay a prepared answer.
 3. Choose **Read text**; search `Photosynthesis`. Compare the returned line to the image.
 4. Choose **Practice recall from these lines**; reveal the exact recognized text. These are verbatim recall cues, explicitly not generated explanations or fact verification.
 5. Save the useful practice, reload and revisit **Saved** without reanalyzing. Show the preserved uncertainty. Saved discoveries stay on this device.

@@ -23,9 +23,12 @@ import { pocketFromTurn } from '../services/pockets'
 import { VoiceInput } from './VoiceInput'
 import { modeForGoal } from '../services/modeRelevance'
 import type { AnswerLanguage } from '../services/preferences'
+import { MessageCircle, ThumbsDown, ThumbsUp } from 'lucide-react'
+import { excludeDismissedDetections } from '../services/dismissedDetections'
 
 interface Props {
   language: AnswerLanguage
+  dismissed: DetectedObject[]
   image?: UploadedImage
   detections: DetectedObject[] | null
   ocrText: string | null
@@ -54,17 +57,21 @@ function EvidenceReferences({ ids, scene }: { ids: string[]; scene: SceneAnalysi
   })}</div>
 }
 
-function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneTurn; scene: SceneAnalysis; stepsState?: LingStepsState; onStepsChange: (value: LingStepsState) => void }) {
+function IntentResult({ turn, scene, stepsState, onStepsChange, onAskAgain }: { turn: SceneTurn; scene: SceneAnalysis; stepsState?: LingStepsState; onStepsChange: (value: LingStepsState) => void; onAskAgain: (question?: string) => void }) {
   const response = turn.response
+  const [feedback, setFeedback] = useState<'helpful' | 'unclear'>()
   return <article className="intent-result" data-mode={turn.intent.mode}>
-    <h3>{response.suggestions.length ? 'Here’s what you can try.' : 'Here’s what Ling noticed.'} <span className="answer-mode">{intentPresentation[turn.intent.mode].label}</span></h3>
-    <p className="answer-ready">100% · Answer ready</p>
+    <h3>{response.suggestions.length ? 'Here’s what you can try.' : 'Ling’s answer'}</h3>
+    <p className="visually-hidden" role="status">Answer ready</p>
     {response.status !== 'answered' && <p className="local-notice">{response.status === 'no-supported-result' ? 'No supported result for this goal.' : 'More evidence is needed.'}</p>}
     <p>{response.answer}</p>
-    {turn.grounding.warnings.map((warning, i) => <p className="local-notice" key={i}>{warning}</p>)}
     <LingSteps turn={turn} scene={scene} state={stepsState} onChange={onStepsChange} />
-    <SaveDiscovery draft={pocketFromTurn(scene, turn)} />
-    <details><summary>What supports this answer?</summary>
+    <div className="answer-actions"><SaveDiscovery compact draft={pocketFromTurn(scene, turn)} /><button type="button" onClick={() => onAskAgain()}><MessageCircle size={16} /> Ask again</button></div>
+    <div className="answer-feedback" aria-label="Was this answer useful?"><span>Was this useful?</span><button type="button" aria-pressed={feedback === 'helpful'} onClick={() => setFeedback('helpful')}><ThumbsUp size={16} /> Helpful</button><button type="button" aria-pressed={feedback === 'unclear'} onClick={() => { setFeedback('unclear'); onAskAgain(turn.intent.goal) }}><ThumbsDown size={16} /> Not quite</button></div>
+    {feedback && <p className="feedback-note" role="status">{feedback === 'helpful' ? 'Marked helpful for this visit.' : 'Edit your question to tell Ling what seems wrong, then ask again.'}</p>}
+    <small className="answer-caution">AI can make mistakes. Check against your photo.</small>
+    <details className="answer-evidence"><summary>Why this answer?</summary>
+    {turn.grounding.warnings.map((warning, i) => <p className="local-notice" key={i}>{warning}</p>)}
     {!!turn.grounding.answerTextMatches?.length && <div className="answer-text-matches"><h4>Matching text from your photo</h4><p className="context-note">These lines also appear in the answer. Text matches do not verify the rest of the interpretation.</p><EvidenceReferences ids={turn.grounding.answerTextMatches} scene={scene} /></div>}
     
     <p className="context-note">Answered from the same scene in {(turn.elapsedMs / 1000).toFixed(1)}s. No image analysis rerun.</p>
@@ -92,16 +99,16 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
         <summary>{card.question}</summary><p>{card.answer}</p><EvidenceReferences ids={card.evidence_ids} scene={scene} />
       </details>)}
     </>}
-    <p className="context-note">AI interpretation can be wrong. Check important details against your photo.</p>
   </article>
 }
 
-export function ReasoningPanel({ language, image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true, voiceRequest = 0 }: Props) {
+export function ReasoningPanel({ language, dismissed, image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true, voiceRequest = 0 }: Props) {
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [scene, setScene] = useState<SceneAnalysis>()
-  const correctedScene = useMemo(() => scene ? applyLabelCorrections(scene, corrections) : undefined, [scene, corrections])
+  const correctedScene = useMemo(() => scene ? excludeDismissedDetections(applyLabelCorrections(scene, corrections), dismissed) : undefined, [scene, corrections, dismissed])
   const previousCorrections = useRef(corrections)
+  const previousDismissed = useRef(dismissed)
   const [goal, setGoal] = useState('')
   const [appliedGoal, setAppliedGoal] = useState(goalRequest)
   if (goalRequest !== appliedGoal) {
@@ -159,8 +166,9 @@ export function ReasoningPanel({ language, image, detections, ocrText, processin
 
   useEffect(() => () => { generation.current++; request.current?.abort(); onBuildingChange(false) }, [onBuildingChange])
   useEffect(() => {
-    if (previousCorrections.current === corrections) return
+    if (previousCorrections.current === corrections && previousDismissed.current === dismissed) return
     previousCorrections.current = corrections
+    previousDismissed.current = dismissed
     generation.current++
     request.current?.abort()
     request.current = undefined
@@ -171,7 +179,7 @@ export function ReasoningPanel({ language, image, detections, ocrText, processin
     setStatus('idle')
     onBuildingChange(false)
     if (correctedScene) onSceneChange?.(correctedScene)
-  }, [corrections, correctedScene, onBuildingChange, onSceneChange])
+  }, [corrections, dismissed, correctedScene, onBuildingChange, onSceneChange])
 
   function begin(nextPhase: 'scene' | 'intent') {
     requestPhase.current = nextPhase
@@ -204,7 +212,7 @@ export function ReasoningPanel({ language, image, detections, ocrText, processin
         text => { if (id === generation.current) setMessage(text) })
       if (id === generation.current) {
         setPreviousDuration(previous => ({ ...previous, scene: performance.now() - started }))
-        const corrected = applyLabelCorrections(next, corrections)
+        const corrected = excludeDismissedDetections(applyLabelCorrections(next, corrections), dismissed)
         setScene(next); onSceneChange?.(corrected); setTurns([]); setStatus('idle'); setMessage('Shared scene ready.')
         return corrected
       }
@@ -263,6 +271,7 @@ export function ReasoningPanel({ language, image, detections, ocrText, processin
   const renderTurn = (turn: SceneTurn) => {
     const key = lingStepsKey(turn)
     return <IntentResult key={key} turn={turn} scene={correctedScene ?? scene!} stepsState={stepLists[key]}
+      onAskAgain={question => { setGoal(question ?? ''); requestAnimationFrame(() => { const input = document.getElementById('scene-goal'); input?.focus(); input?.scrollIntoView({ block: 'center', behavior: 'instant' }) }) }}
       onStepsChange={value => setStepLists(previous => ({ ...previous, [key]: value }))} />
   }
   const placeholder = goalRequest?.displayText ?? (objectLabel ? `What would you like to know about ${objectLabel}?` : goalRequest?.text ?? 'Type a question…')
@@ -291,16 +300,14 @@ export function ReasoningPanel({ language, image, detections, ocrText, processin
     {scene && <div className="shared-scene">
       <form onSubmit={event => { event.preventDefault(); void ask(correctedScene, questionToSend) }}>
         <label htmlFor="scene-goal">{mode === 'FIND' ? 'What are you looking for?' : mode === 'FIX' ? 'What would you like to check?' : mode === 'IMPROVE' ? 'What would you like to improve?' : 'Ask about your photo'}</label>
-        {mode === 'FIND' && !scene.objects.some(object => object.purposes.length) && <p className="context-note">I can look for visible objects. I may need more detail to tell what they can do.</p>}
         <input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading'} onChange={event => setGoal(event.target.value)} placeholder={placeholder} />
-        <p className="suggestion-caption">A starting point from this photo. Tap to edit, then ask.</p>
         <div className="suggestions" aria-label="Suggested goals">
           {suggestions.map(text => <button key={text} type="button" aria-pressed={goal === text} disabled={status === 'loading'} onClick={() => { setGoal(text); document.getElementById('scene-goal')?.focus({ preventScroll: true }) }}>{text}</button>)}
         </div>
         <button type="submit" aria-label={retryingQuestion ? 'Retry question' : 'Ask scene'} disabled={!localReasoningAvailable || processing || status === 'loading' || !questionToSend}>{retryingQuestion ? 'Try again' : 'Ask Ling'}</button>
       </form>
       {latest && renderTurn(latest)}
-      {visibleTurns.length > 1 && <details><summary>Earlier questions</summary>{visibleTurns.slice(0, -1).map(renderTurn)}</details>}
+      {visibleTurns.length > 1 && <details className="earlier-questions"><summary>Earlier questions ({visibleTurns.length - 1})</summary>{visibleTurns.slice(0, -1).map((turn, index) => <details key={lingStepsKey(turn)}><summary>{intentPresentation[turn.intent.mode].label} · Answer {index + 1}</summary>{renderTurn(turn)}</details>)}</details>}
     </div>}
   </section>
 }

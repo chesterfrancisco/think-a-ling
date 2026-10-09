@@ -3,12 +3,12 @@ import { Bookmark, Trash2, X } from 'lucide-react'
 import { clearPockets, deletePocket, readPockets, savePocket } from '../services/pockets'
 import type { Pocket, PocketDraft } from '../services/pockets'
 
-export function SaveDiscovery({ draft }: { draft: PocketDraft }) {
+export function SaveDiscovery({ draft, compact = false }: { draft: PocketDraft; compact?: boolean }) {
   const [message, setMessage] = useState('')
   return <div className="save-discovery"><button type="button" onClick={() => {
-    try { savePocket(draft); setMessage('Saved on this device. Open Saved in the navigation to revisit it.') }
+    try { savePocket(draft); setMessage('Saved on this device. Find it in Saved.') }
     catch (error) { setMessage(error instanceof Error ? error.message : 'Could not save this discovery.') }
-  }}><Bookmark size={16} /> Save this</button><small>Text & evidence only. No photo saved or uploaded.</small>{message && <p role="status">{message}</p>}</div>
+  }} title="Save text and evidence on this device"><Bookmark size={16} /> Save this</button>{!compact && <small>Saved on this device · text only.</small>}{message && <p role="status">{message}</p>}</div>
 }
 
 export function LingPockets() {
