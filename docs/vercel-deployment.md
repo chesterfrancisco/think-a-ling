@@ -1,121 +1,96 @@
-# Milestone 4: Vercel deployment
+# Think-a-ling: Vercel deployment
 
-Updated and tested on 2026-10-09, including opt-in browser reasoning. The production artifact is `dist/`, now including approximately 374 MB of optional SmolVLM/runtime assets. These are static downloads, not a server-side AI service. See [real model results and limitations](browser-ai-validation.md). This pass does not verify a live Vercel URL.
+Updated 2026-10-10. Target: https://think-a-ling.vercel.app/. The source builds to `dist/`. Local Gemma/Ollama stays available in development; no public Ollama tunnel or cloud inference was added. Current validation and risks are in [offline/account review](offline-accounts-risk-review.md).
 
-## Public feature boundary
+## Build settings
 
-| Feature | Public Vercel website | Local development app |
-| --- | --- | --- |
-| Photo selection, live camera, capture review/retake | Available; camera needs permission and a secure context | Available |
-| MediaPipe detection, measured boxes, hotspots, object cards, label corrections | In the visitor's browser | In the browser |
-| Tesseract English OCR and reading extracted text | In the visitor's browser | In the browser |
-| Short interpretations and follow-up answers | Optional experimental SmolVLM: explicit enable/download, compatible WebGPU device required | Existing Gemma workflow remains the default |
-| Gemma scene descriptions, object questions, Explore/Find/Fix/Improve reasoning, text explanation and study prompts | Unavailable; related actions disabled with a local-app explanation | Local Ollama `gemma3:4b` via the guarded Vite proxy |
-| Continued detection/OCR without networking | Verified after both engines initialize, while the page remains open | Same browser behavior |
-| Ling Pockets saved discoveries | Explicit browser-only text/evidence saves, revisit and delete | Same, in a separate localhost library |
-| Experimental English voice input | Requires browser on-device speech support and explicit permission; real transcription remains unverified | Same; no cloud speech fallback |
-| Offline page reload or installed PWA | Not supported | Not supported |
+| Setting | Value |
+| --- | --- |
+| Framework | Vite |
+| Root | Repository root (`./`) |
+| Install | `npm ci` |
+| Build | `npm run build` |
+| Output | `dist` |
+| Node | 24.x |
+| Production account URL | `VITE_SUPABASE_URL=https://pyduoijdrfhjxsoseqgu.supabase.co` |
+| Production account key | `VITE_SUPABASE_PUBLISHABLE_KEY`, the owner's public publishable key |
 
-The public site cannot access the developer's localhost Ollama. Installing Ollama alone does not enable reasoning on this website: the visitor would also need to run the local development application. No tunnel, cloud inference, serverless AI function, account system or alternative backend has been introduced.
+The app remains usable without account configuration, but shows that accounts are unavailable. A local `.env.local` does **not** configure Vercel. The owner-provided values have now been set for Production through the authenticated CLI. For a new project, add them in Vercel Settings ? Environment Variables, then redeploy. Never add a secret/service-role key or an Ollama URL. The build rejects privileged account keys.
 
-## Included configuration
+`vercel.json` supplies build/output settings and security headers. No catch-all rewrite is needed: application state lives at `/`, and build output includes a Ling `404.html`. Missing model/WASM paths must stay errors. There is no production `/local-ollama` endpoint. `/sw.js` is served with no-cache so browsers check for new builds. CSP permits same-origin assets and Supabase HTTPS account requests, and blocks external model telemetry. Original photos are not uploaded; synced text/evidence is uploaded only by explicit choice.
 
-`vercel.json` specifies:
+The owner has applied [the Supabase migration](../supabase/migrations/202610090001_discoveries.sql). Live checks confirm the history table and deletion RPC reject anonymous access. Set Supabase Site URL and allowed production redirect to `https://think-a-ling.vercel.app/`, plus local test redirects `http://localhost:5173/` and `http://127.0.0.1:4173/`. Public email confirmation/recovery also needs a suitable configured email provider. Follow the [real-account acceptance procedure](offline-accounts-risk-review.md#account-setup-and-acceptance); email delivery and successful cross-device sign-in were not verified by the agent.
 
-- Framework preset: **Vite**.
-- Install command: **`npm ci`**.
-- Build command: **`npm run build`**.
-- Output directory: **`dist`**.
-- Root directory: **this project folder**.
-- Node.js: **24.x**, specified in `package.json` and lockfile metadata.
-- Environment variables: **none required**. Do not add an Ollama URL, cloud API key or Vercel AI integration.
+## Exact local commands
 
-The app uses React state within `/`, with no URL-based application routes. No catch-all rewrite is needed. Missing model/WASM paths must remain errors rather than returning the HTML application. There is no `/local-ollama` production route.
-
-Configured response headers restrict connections to the same origin, disable form submissions and framing, prevent MIME sniffing, and restrict camera, microphone and on-device speech recognition to the same origin while disabling geolocation. Microphone access is requested only by an explicit voice action. Browser-managed speech packs may require an internet download; the app rejects remote recognition. The existing HTML connection policy is retained. No cross-origin isolation requirement was added.
-
-These settings follow Vercel's [Vite deployment guide](https://vercel.com/docs/frameworks/frontend/vite), [configuration reference](https://vercel.com/docs/project-configuration/vercel-json) and [supported Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
-
-## Verify locally before uploading
-
-PowerShell, from the existing prepared workspace:
+PowerShell:
 
 ```powershell
 Set-Location C:\xampp\htdocs\thing-a-ling
+npm.cmd ci
 npm.cmd run build
 npm.cmd run lint
-npm.cmd run test
+npm.cmd test
 npm.cmd run test:production -- C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
-```
-
-The last path points to the Playwright installation used for this validation; on another machine pass its installed `playwright/index.mjs` path. Playwright and Chrome are test tools, not app dependencies. The smoke runner starts and stops its own loopback static server, applies the Vercel headers, and uses the built `dist/` files. It does not need Ollama or call Gemma.
-
-For manual production preview:
-
-```powershell
 npm.cmd run preview -- --host 127.0.0.1 --port 4173 --strictPort
 ```
 
-Open `http://127.0.0.1:4173/`. If this preview is already running, use the existing process. Vite preview does not apply `vercel.json` headers; the smoke runner above explicitly tests them.
+On this machine a preview may already be running; use that process instead of starting a conflicting one. On another machine substitute its installed Playwright path. `test:production` starts/stops its own local static server and applies Vercel headers; Vite preview alone does not apply those headers.
 
-On a fresh checkout, run `npm.cmd ci` first. Keep `public/ai/`, `public/fonts/` and `package-lock.json` included in the source. `npm run build` verifies all 17 source assets before compiling and verifies every copied asset in `dist/ai/` afterward, including package versions, byte counts and SHA-256 hashes. A missing asset fails the build instead of falling back to a CDN. The current assets are already prepared; `npm.cmd run setup:ai` is only needed when setting up missing assets or refreshing them after an AI package change, and may need internet.
-
-## Publish from this workspace
-
-Run these commands yourself when ready to publish. They need internet and your Vercel account:
+With production preview running, focused checks:
 
 ```powershell
-Set-Location C:\xampp\htdocs\thing-a-ling
+node scripts/run-browser-check.mjs validate-resilience C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+node scripts/run-browser-check.mjs validate-pockets-layout C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+node scripts/run-browser-check.mjs validate-account-live C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+```
+
+The live account check reads ignored `.env.local`; it checks public settings, denied anonymous access and one deliberately invalid login. It creates no users and sends no emails. `node scripts/serve-account-test.mjs` starts an isolated test-only Vite instance on 5174. `validate-account-ui` uses that instance with fake public config and intercepted HTTP responses; its success is not real authentication evidence. `validate-offline-reasoning` performs an actual model run and is optional when another hardware/model/offline regression check is needed; do not rerun it for copy changes.
+
+Build verifies all 17 detection/OCR assets and pinned browser model/runtime assets before/after copying. It then generates a versioned offline allowlist with SHA-256 hashes and the 404 page. Missing or corrupt assets fail the build. Prepared `public/ai` files are committed; normally no setup download is needed. If missing, use `npm.cmd run setup:ai` and `node scripts/prepare-browser-ai.mjs` while online.
+
+## Publish
+
+For the existing Git-connected Vercel project:
+
+```powershell
+git status --short
+git add src scripts public/demo docs supabase README.md test-images/README.md package.json package-lock.json index.html vite.config.ts vercel.json .vercelignore .env.example
+git diff --cached --stat
+git commit -m "Add offline study flow and Supabase account history"
+git push origin main
+```
+
+Review staged changes; do not stage `.env.local`, private photos, recordings or test reports. Vercel should build the pushed commit if automatic deployments are configured. A Git push alone does not prove that Vercel deployed it successfully.
+
+Alternative, using your authenticated Vercel CLI:
+
+```powershell
 npx.cmd --yes vercel@latest login
 npx.cmd --yes vercel@latest --prod
 ```
 
-Select your intended Vercel account/team, link the existing project or create `think-a-ling`, and use `./` as the project directory. Keep the settings above. Run from the source folder, not from `dist`; Vercel will install from the lockfile, run the verified build and serve only the output. The `--prod` command publishes the site. CLI behavior is documented in [Vercel deploy](https://vercel.com/docs/cli/deploy).
+Use the existing Think-a-ling project and `./` directory. The command publishes. `.vercelignore` allows source, static assets and required build scripts; it excludes tests, local credentials and recordings. See [Vercel Vite settings](https://vercel.com/docs/frameworks/frontend/vite) and [deployment command](https://vercel.com/docs/cli/deploy).
 
-`.vercelignore` allows only app source, public assets, TypeScript/build configuration, package files and the build-time asset checker. Test images, camera recordings, reports, local credentials and documentation are excluded from the CLI upload. `.vercel/` is gitignored. See [Vercel's exclusion-file documentation](https://vercel.com/docs/deployments/vercel-ignore).
+## Hosted acceptance checks
 
-Alternatively, import the Git repository in Vercel and use the same settings. A Git deployment only includes committed and pushed files. `.vercelignore` is not a substitute for reviewing what is in the repository.
+1. Confirm the deployment shows the intended Git commit and Account, Edit photo, offline preparation and the study example. A browser with an old service worker may need all site tabs closed before the new worker activates.
+2. In a fresh browser, select a photo: real detection/OCR should work without an account or model download. Inspect hotspot evidence, change the photo, hide markers and try fullscreen. Camera capture must show review/retake before Analyze.
+3. Open Account, create a real account with an email you control and confirm it. Sign in, save and explicitly sync a text discovery. Verify a second device and isolation from a separate account. Check password recovery and deletion using a disposable account.
+4. Choose **Use Think-a-ling offline ? Prepare for offline**. Wait for ready. Disable browser networking and reload. Run the study example and another photo, save/revisit text, crop/rotate and rescan. Core pack is about 75 MiB; accounts still require internet.
+5. Separately enable on-device AI while online, complete its approximately 374 MB download, then test cached analysis after an offline reload on a compatible device. Check the answer against the image: the small model can omit/invent details and return unhelpful output.
+6. Request a nonexistent page and verify Ling's fallback with HTTP 404. Missing model paths should not return app HTML. Confirm WASM MIME types, model-part downloads and `/sw.js` headers. Do not manually add gzip Content-Encoding to the OCR data file; the cache verifier accepts the two known raw/decoded representations.
+7. Confirm no photo inference POST/cloud model request occurs. Supabase requests are expected only for account/session actions and explicit text sync. Sign-in tokens may refresh while a session is active; these requests are not cached by the service worker.
 
-## Check the resulting HTTPS URL
+## Validation and limits
 
-1. Open the published URL in a fresh browser. Let the splash complete, then continue. Confirm that browser reasoning is presented as optional and experimental.
-2. Select a clear photo with supported objects. Wait for recognition, tap a green hotspot, and inspect the object card. Reasoning actions are disabled until on-device AI is enabled. Hide/show markers and try a narrow mobile viewport.
-3. Select a printed-text photo, choose **Read text**, and inspect the actual text. **Explain this text** is disabled until on-device AI is ready. Structured study cards still require the local Gemma app.
-4. Open the camera, allow access, capture, review, retake, then confirm **Analyze photo**. Detection and OCR should complete without a Gemma loading state. Back should release camera tracks.
-5. Inspect Network: worker, language and model requests should be same-origin and successful; `.wasm` responses should have `application/wasm`. There should be no photo/API POST or call to localhost/Ollama. Do not configure `Content-Encoding: gzip` manually for the compressed OCR language file.
-6. After detection and OCR initialize, disable networking without reloading and select another photo. Inference should continue. Re-enable networking before refreshing the page.
-7. Choose **Enable AI to analyze**, then **Enable on-device AI**. Model files should start downloading only after this explicit consent. Wait for **On-device AI ready**, choose **Analyze photo**, then ask a follow-up. Check actual generated answers against the photo; the small model can invent details. Test cancel/retry and **Remove downloaded model**. On unsupported WebGPU devices, detection and OCR must remain usable.
+- Build and lint pass; **53 unit tests** pass. Configured account SDK adds a >500 KB main-chunk warning; this is a remaining startup-performance opportunity.
+- Production smoke: actual four-animal detections, real English OCR, boxes/hotspots at 1280/390/320px; file-backed camera live fullscreen, capture/review/retake and track cleanup; no unexpected external requests, image uploads or page errors.
+- Resilience: full offline reload, new-image detection/OCR, cached example study flow, text search/recall/save/revisit, crop/rotate/rescan, HTTP 404 fallback and persisted accessibility preference pass. Axe reports zero violations across four tested screens.
+- Actual cached SmolVLM image inference and a follow-up completed offline. An overly generic answer was observed and is now rejected by a unit-tested guard. This does not establish consistent answer quality or multilingual accuracy.
+- Live Supabase settings, anonymous denial and real invalid-login handling pass. Successful real-user email/login/history isolation and cross-device sync remain acceptance checks; UI success-path tests used HTTP simulation.
+- Speech control/lifecycle tests pass with simulated events; actual generated-audio transcription previously failed. Physical microphone use remains unverified and experimental.
+- Local Ollama proxy rejection/security checks pass; no new lengthy Gemma benchmark was run. Browser/offline changes do not replace the existing localhost reasoning service.
+- Initial downloads, login and sync need internet. Storage can be evicted. PWA installation is not implemented. Phone hardware, mobile Safari, real webcam permissions and full screen-reader usability are not established by desktop viewport/headless checks.
 
-For a public submission, check the project's deployment protection settings so intended reviewers can access the final production URL. This has not been changed or verified by this preparation task.
-
-## Actual validation results
-
-| Check | Result |
-| --- | --- |
-| Production build | Passed; source/output integrity checks for detection/OCR and optional browser model/runtime assets |
-| Lint | Passed |
-| Unit tests | 48 passed, 0 failed |
-| Production smoke with configured response headers | Passed on Chrome 153.0.8010.55 |
-| Detection | Actual four detections: Dog 1, Cat 1, Dog 2, Cat 2; real boxes/hotspots at 1280/390/320px |
-| OCR | Actual recognition included `Read this text without internet.` and `Invoice 12345 Total 250.00` |
-| Camera | Real browser getUserMedia API with a file-backed camera; fullscreen live detection and aligned boxes, fullscreen capture review, exit, retake, confirmation and track cleanup passed |
-| Saved discoveries and layout | Actual OCR save, reload/revisit without reanalysis, deduplication and deletion passed; desktop and 390/320px layout checks passed |
-| Voice | Simulated speech-event lifecycle checks passed. Real generated-audio recognition did not pass; physical-microphone use remains unverified and the feature is explicitly experimental |
-| Public reasoning | Opt-in real SmolVLM image answer and text-only follow-up passed; unsupported-device, download failure, retry/cancel and cache removal checks passed |
-| Network/privacy | Zero external requests, image/API POSTs or page errors during smoke interactions |
-| Offline inference | New images processed after initialization with all browser networking disabled |
-| Existing Milestone 1 production regressions | Passed, including missing-asset failures/retry, blank/corrupt uploads, disposal/reinitialization and offline inference |
-| Local development proxy guard | Passed all eight rejection checks; preview endpoint returned 404; no generation requested |
-
-The current detection/OCR smoke completed in under one second on this laptop over loopback; exact run timings are in the local JSON report. This is not an internet download or mobile-device benchmark. Detection/OCR assets total 72.8 MiB, including compatibility variants. Optional browser reasoning adds approximately 374 MB, fetched after explicit consent; first image analysis took 38.84 seconds in the earlier production browser test. See the separate validation report for quality failures and scope limits.
-
-Machine-readable evidence and screenshots are in `test-results/production-smoke.json`, `production-object-mobile.png`, `production-ocr.png`, `validate-milestone1.json` and `security-audit.json`. They are local artifacts, excluded from deployment.
-
-## Remaining limits
-
-- No public Vercel URL, Vercel-hosted build, CDN headers or deployment protection was tested; complete the HTTPS checks after publishing.
-- This pass did not retest a physical webcam, mobile Safari or every browser. File-backed camera tests do not establish hardware permission behavior.
-- Compatible public visitors can opt into experimental SmolVLM summaries and conversations. Gemma and evidence-validated structured recommendations, Ling Steps and study cards remain in the local development app. No equivalent-quality claim is made.
-- Detection can miss or mislabel objects; OCR can misread text. Confidence is not an accuracy rate, and correcting a label does not retrain the model.
-- There is no offline reload/PWA cache. First-time page/model loading needs internet. Photos remain on the device; Vercel still receives normal website/asset requests and associated hosting metadata.
-- Existing local Gemma performance and limitations are unchanged; no new long benchmark was run.
+For honest public claims and the remaining risk procedure, use the [current risk review](offline-accounts-risk-review.md) and [browser model quality evidence](browser-ai-validation.md). Previous reports saying offline reload or account integration are absent are historical.

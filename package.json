@@ -12,7 +12,7 @@
     "test:reasoning": "node --experimental-strip-types --test scripts/reasoning.test.mjs scripts/scene-intent.test.mjs",
     "test": "node --experimental-strip-types --test scripts/*.test.mjs",
     "prebuild": "npm run check:ai && node scripts/check-browser-ai.mjs",
-    "postbuild": "node scripts/check-ai-assets.mjs --dist && node scripts/check-browser-ai.mjs --dist",
+    "postbuild": "node scripts/check-ai-assets.mjs --dist && node scripts/check-browser-ai.mjs --dist && node scripts/prepare-offline.mjs",
     "test:production": "node scripts/validate-production.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -22,6 +22,7 @@
   "dependencies": {
     "@huggingface/transformers": "4.3.1",
     "@mediapipe/tasks-vision": "^1.1.0",
+    "@supabase/supabase-js": "^2.117.3",
     "@tailwindcss/vite": "^4.3.3",
     "lucide-react": "^1.54.0",
     "motion": "^14.0.0",
@@ -31,6 +32,7 @@
     "tesseract.js": "^7.0.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
     "@types/node": "^24.13.3",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

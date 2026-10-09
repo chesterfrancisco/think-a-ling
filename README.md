@@ -10,11 +10,13 @@ Built for the AppBuildersPH Local AI Hackathon 2026. MediaPipe detection and Eng
 
 **Ling Actions + Ling Steps:** contextual choices reflect the selected object, recognized text and its saved goal. Supported recommendations can become optional checklists with their original evidence and caveats. Ticks mean user-marked completion, never AI-verified physical changes. Checklists stay in memory for the current photo/session. Relevant modes appear first; the remaining modes stay available under Other ways to explore.
 
-**Ling Pockets:** choose **Save this** on recognized text, a scene summary or an answer; open **Saved** to revisit or delete it. Saves include original evidence and uncertainty, not the original photo. Storage is limited to this browser and website origin, with no automatic history, login or cloud backup. Clearing site data deletes it. Localhost and the public website have separate saved libraries.
+**Ling Pockets:** choose **Save this** on recognized text, a scene summary or an answer; open **Saved** to revisit or delete it. Saves include original evidence and uncertainty, not the original photo. Device storage is limited to this browser and website origin. Optional Supabase accounts support explicit text/evidence sync across devices; nothing is uploaded automatically. Clearing site data deletes device copies. Localhost and the public website have separate device libraries.
 
-**Experimental local voice:** opt in to a browser-managed English speech pack, then dictate an editable question. The app requires on-device recognition and never falls back to remote speech. Control/lifecycle checks passed, but the real generated-audio transcription test failed (no-speech/timeout); physical-microphone transcription and Filipino support are not verified. Do not depend on voice for the live demonstration yet. Typing remains available.
+**Offline study flow:** open First time? Try a study task, load the included example, read actual OCR, find a keyword, practice verbatim recall and save it. Photo editing provides crop, rotate, flip and tonal controls before rescanning. These tools work with the offline pack; recall practice is not a generated explanation.
 
-See the [current feature validation, hackathon criteria review and real-account implementation plan](docs/product-next-steps-and-criteria.md). Account creation and cross-device sync are planned, not implemented.
+**Experimental local voice:** after a scene analysis, use the toolbar microphone icon and opt in to a browser-managed English speech pack, then dictate an editable question. The app requires on-device recognition and never falls back to remote speech. Control/lifecycle checks passed, but the real generated-audio transcription test failed (no-speech/timeout); physical-microphone transcription and Filipino support are not verified. Do not depend on voice for the live demonstration yet. Typing remains available.
+
+See the [current offline/account validation, focused student demo, language limits, risk register and criteria review](docs/offline-accounts-risk-review.md). Real account integration and its database are implemented; live anonymous-denial and invalid-login checks pass. Email delivery, successful real-user sign-in and two-user cross-device history remain acceptance checks. Vercel needs the public Supabase environment variables configured before redeploying.
 
 See the [product refinement validation](docs/product-experience-validation.md) for actual checks and limitations. GitHub: [chesterfrancisco/think-a-ling](https://github.com/chesterfrancisco/think-a-ling).
 
@@ -84,7 +86,7 @@ Upload an image; detection and OCR run automatically. **Scan again** retries det
 | `src/App.tsx`, `App.css`, `Everyday.css`, `index.css` | Responsive camera/photo discovery UI, independent progressive results/errors, loading and empty states |
 | `public/ai/` | Detection model, MediaPipe WASM, OCR worker/core WASM, compressed English traineddata, asset manifest with SHA-256 hashes |
 | `scripts/prepare-ai-assets.mjs`, `check-ai-assets.mjs` | Reproducible asset preparation and build-time integrity/version checks |
-| `index.html` | Same-origin connection policy that blocks MediaPipe's external usage-metrics endpoint |
+| `index.html` | Connection policy allowing local assets and configured Supabase accounts while blocking MediaPipe's external metrics endpoint |
 | `scripts/validate-milestone1.js` | Actual browser integration checks, exported as a function accepting a Playwright Page |
 | `test-images/` | Original desk image and detection/OCR/blank fixtures |
 
@@ -112,7 +114,7 @@ MediaPipe 1.1.0 and Tesseract.js 7.0.0 remain unchanged. Their asset set is abou
 
 **Verified:** Playwright `context.setOffline(true)` after both engines initialized; new file selections and both inference tasks passed with **zero additional network requests**.
 
-This does **not** claim offline page reload/PWA installation. No service worker or persistent app-shell cache was added. Reloading with all networking disabled will fail; releasing engines also requires the local server to be reachable for reinitialization. Disconnecting internet alone still permits localhost asset loading.
+**Offline reload is now implemented and tested.** In the production build choose **Use Think-a-ling offline ? Prepare for offline** while connected. Once the approximately 75 MiB app/detection/OCR pack is ready, a full page reload and new-image inference work with browser networking disabled. The optional SmolVLM model needs its separate approximately 374 MB download; real browser reasoning also ran after offline reload. Initial downloads and account actions need internet, and browser storage can be evicted. PWA installation is not implemented. Local development Gemma still requires the local Vite/Ollama processes, but does not require cloud inference.
 
 MediaPipe 1.1.0 attempted POST requests to `https://odml.pa.googleapis.com/v1/log` during the initial audit. The application now blocks external connections through CSP before requests leave the page. A browser console message about blocked metrics is expected; it does not prevent local inference. Keep this policy when integrating future UI or hosting.
 

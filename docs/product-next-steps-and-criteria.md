@@ -1,5 +1,7 @@
 # Product improvements and hackathon review
 
+> Historical snapshot. Offline reload and real Supabase integration were added afterward. See [current implementation and acceptance gaps](offline-accounts-risk-review.md).
+
 Reviewed 2026-10-09 against the six AppBuildersPH slides supplied by the user. This is a readiness assessment, not an official judge score or a claim that every criterion has been met.
 
 ## Public and localhost remain separate

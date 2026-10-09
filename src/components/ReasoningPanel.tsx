@@ -41,6 +41,7 @@ interface Props {
   corrections: LabelCorrection[]
   onVoiceMode?: (mode: ReasoningMode) => void
   visible?: boolean
+  voiceRequest?: number
 }
 
 const sourceNames = { mediapipe: 'Object recognition', tesseract: 'Text in the photo', gemma: 'Gemma interpretation', smolvlm: 'Experimental browser interpretation', user: 'Your label correction' }
@@ -93,13 +94,14 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
   </article>
 }
 
-export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true }: Props) {
+export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true, voiceRequest = 0 }: Props) {
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [scene, setScene] = useState<SceneAnalysis>()
   const correctedScene = useMemo(() => scene ? applyLabelCorrections(scene, corrections) : undefined, [scene, corrections])
   const previousCorrections = useRef(corrections)
   const [goal, setGoal] = useState('')
+  const [language, setLanguage] = useState<'English' | 'Filipino'>('English')
   const [appliedGoal, setAppliedGoal] = useState(goalRequest)
   if (goalRequest !== appliedGoal) {
     setAppliedGoal(goalRequest)
@@ -223,7 +225,7 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     setMessage('Reasoning about your goal using the saved scene…')
     try {
       const history = turns.filter(turn => turn.sceneId === activeScene.id && turn.intent.objectId === objectId)
-      const next = await answerIntent(activeScene, { mode, goal: activeGoal, ...(objectId ? { objectId } : {}) }, history, controller.signal)
+      const next = await answerIntent(activeScene, { mode, goal: activeGoal, language, ...(objectId ? { objectId } : {}) }, history, controller.signal)
       if (id === generation.current && latestFocus.current === focusKey) { setPreviousDuration(previous => ({ ...previous, intent: performance.now() - started })); setTurns(previous => [...previous, next].slice(-24)); onTurnComplete?.(next, focusKey); setStatus('idle'); setMessage('Goal response ready.') }
     } catch (error) {
       if (id === generation.current) { setStatus('error'); setMessage(error instanceof Error ? error.message : String(error)) }
@@ -271,7 +273,7 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     <div className="selected-intent" data-mode={mode} role="status"><span className="selected-intent-dot" /><div><strong>{intentPresentation[mode].label}</strong><span>{intentPresentation[mode].hint}</span></div></div>
     {objectFocus && <p className="object-chat-context">About <strong>{objectLabel ?? objectFocus.label}</strong><span>Answers stay with this selected object.</span></p>}
     {!ollamaAvailable && <BrowserAiSetup />}
-    {image && <VoiceInput key={image.url + (focusKey ?? '') + mode + visible + processing + localReasoningAvailable + (status === 'loading')} disabled={!visible || status === 'loading' || processing || !localReasoningAvailable} onTranscript={text => { setGoal(text); const next = modeForGoal(text); if (next) onVoiceMode?.(next) }} />}
+    {image && scene && voiceRequest > 0 && <VoiceInput key={image.url + (focusKey ?? '') + mode + visible + processing + localReasoningAvailable + (status === 'loading')} disabled={!visible || status === 'loading' || processing || !localReasoningAvailable} onTranscript={text => { setGoal(text); const next = modeForGoal(text); if (next) onVoiceMode?.(next) }} />}
     {!scene && localReasoningAvailable && <p>What are you trying to do? Let’s start with what’s here.</p>}
     {!scene && image && <div className="first-question"><label htmlFor="scene-goal">Your question <span className="context-note">Optional</span></label><input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading' || !localReasoningAvailable} onChange={event => setGoal(event.target.value)} placeholder={placeholder} /></div>}
     {!scene && <button aria-label={status === 'error' || status === 'cancelled' ? 'Retry scene' : 'Build shared scene'} onClick={() => void (async () => {
@@ -281,12 +283,14 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     })()} disabled={!image || !localReasoningAvailable || processing || status === 'loading'}>
       {status === 'error' || status === 'cancelled' ? 'Try again' : 'Analyze photo'}
     </button>}
-    {status === 'loading' && <div className="thinking-status"><AnalysisProgress key={activeRun} phase={phase} objectsReady={detections !== null} textReady={ocrText !== null} expectedMs={previousDuration[phase]} /><button className="secondary" onClick={cancel}>Cancel analysis</button></div>}
+    {status === 'loading' && <div className="thinking-status"><AnalysisProgress key={activeRun} phase={phase} objectsReady={detections !== null} textReady={ocrText !== null} expectedMs={previousDuration[phase]} /><button className="danger-action" onClick={cancel}>Cancel analysis</button></div>}
     {status === 'error' && <p role="alert" className="error">{message}</p>}
-    {status === 'cancelled' && <p role="status">{message}</p>}
+    {status === 'cancelled' && <p role="status" className="cancel-notice">{message}</p>}
     {!image && <p className="empty">Choose an image to begin.</p>}
     {scene && <div className="shared-scene">
       <form onSubmit={event => { event.preventDefault(); void ask(correctedScene, questionToSend) }}>
+        <label>Answer language<select value={language} disabled={status === 'loading'} onChange={e => setLanguage(e.target.value as 'English' | 'Filipino')}><option>English</option><option value="Filipino">Filipino / Tagalog · experimental</option></select></label>
+        <details className="language-help"><summary>Prompt and language limits</summary><p>Ask one specific question, up to 500 characters. English is recommended. Filipino is a requested response language, not a guarantee of fluency or accuracy. Cebuano, Arabic, Korean and other languages are not validated. Text reading uses an English OCR pack; voice currently requires an English local speech pack.</p></details>
         <label htmlFor="scene-goal">{mode === 'FIND' ? 'What are you looking for?' : mode === 'FIX' ? 'What would you like to check?' : mode === 'IMPROVE' ? 'What would you like to improve?' : 'Ask about your photo'}</label>
         {mode === 'FIND' && !scene.objects.some(object => object.purposes.length) && <p className="context-note">I can look for visible objects. I may need more detail to tell what they can do.</p>}
         <input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading'} onChange={event => setGoal(event.target.value)} placeholder={placeholder} />

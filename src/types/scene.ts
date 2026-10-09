@@ -53,6 +53,7 @@ export interface SceneAnalysis {
 export interface UserIntent {
   mode: ReasoningMode
   goal: string
+  language?: 'English' | 'Filipino'
   // Exact shared-scene object ID, never a label-based association.
   objectId?: string
 }

@@ -8,7 +8,7 @@ const changed = () => window.dispatchEvent(new Event('think-pockets-change'))
 
 // Local storage is untrusted input. Never render arbitrary HTML or restore a
 // saved model answer as a fresh AI result. No photo/blob URL is persisted.
-function valid(value: unknown): value is Pocket {
+export function validPocket(value: unknown): value is Pocket {
   if (!value || typeof value !== 'object') return false
   const p = value as Pocket
   return typeof p.id === 'string' && typeof p.savedAt === 'string' && !Number.isNaN(Date.parse(p.savedAt)) &&
@@ -25,7 +25,7 @@ export function readPockets(): Pocket[] {
   if (!raw) return []
   if (raw.length > 4_000_000) throw new Error('Saved discoveries could not be read. Clear them from this browser to start again.')
   const values: unknown = JSON.parse(raw)
-  if (!Array.isArray(values) || !values.every(valid)) throw new Error('Saved discoveries could not be read. Clear them from this browser to start again.')
+  if (!Array.isArray(values) || !values.every(validPocket)) throw new Error('Saved discoveries could not be read. Clear them from this browser to start again.')
   return values.slice(0, LIMIT)
 }
 
@@ -35,7 +35,7 @@ export function savePocket(draft: PocketDraft): Pocket {
   if (existing) return existing
   if (entries.length >= LIMIT) throw new Error('You have 50 saved discoveries. Delete one before saving another.')
   const pocket = { ...draft, id: crypto.randomUUID(), savedAt: new Date().toISOString() }
-  if (!valid(pocket)) throw new Error('This result is too large or incomplete to save. Nothing was stored.')
+  if (!validPocket(pocket)) throw new Error('This result is too large or incomplete to save. Nothing was stored.')
   const serialized = JSON.stringify([pocket, ...entries])
   if (serialized.length > 4_000_000) throw new Error('Saved discoveries are full. Delete an older one before saving this result.')
   try { localStorage.setItem(KEY, serialized) }

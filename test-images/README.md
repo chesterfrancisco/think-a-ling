@@ -10,4 +10,4 @@
 - `ocr-test.png`: generated locally using Windows System.Drawing with black Arial text on a white 1200 × 360 canvas. Contents: `THING A LING LOCAL AI`, `Read this text without internet.`, `Invoice 12345 Total 250.00`. This is test input; recognized output always comes from Tesseract.
 - `blank.png`: locally generated white 1200 × 360 PNG for empty-result checks.
 
-See `docs/milestone-1-validation.md` for actual output. Test fixtures are not copied into the production app.
+See `docs/milestone-1-validation.md` for actual output. The original `study-notes.png` is intentionally copied to `public/demo/study-notes.png` as a clearly labelled example input. Its OCR is computed at runtime; verbatim recall cues are not generated answers. Other test fixtures are not copied into the production app.

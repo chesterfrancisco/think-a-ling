@@ -64,9 +64,8 @@ export function VoiceInput({ disabled, onTranscript }: { disabled: boolean; onTr
   }
   const waiting = phase === 'checking' || phase === 'installing'
   return <div className="local-voice">
-    <button type="button" disabled={disabled || waiting} onClick={() => phase === 'listening' ? (cancel(), setPhase('ready'), setMessage('Voice stopped.')) : phase === 'ready' ? speak() : void prepare(phase === 'download')}>
+    <button type="button" title={phase === 'listening' ? 'Stop listening' : phase === 'ready' ? 'Speak your question' : phase === 'download' ? 'Install English voice pack' : 'Enable local voice'} aria-label={phase === 'listening' ? 'Stop listening' : phase === 'ready' ? 'Speak your question' : phase === 'download' ? 'Install English voice pack' : 'Enable local voice'} disabled={disabled || waiting} onClick={() => phase === 'listening' ? (cancel(), setPhase('ready'), setMessage('Voice stopped.')) : phase === 'ready' ? speak() : void prepare(phase === 'download')}>
       {phase === 'listening' ? <Square size={16} /> : <Mic size={16} />}
-      {phase === 'listening' ? 'Stop listening' : phase === 'ready' ? 'Speak your question' : phase === 'download' ? 'Install English voice pack' : 'Enable local voice'}
     </button>
     {waiting && <button type="button" onClick={() => { cancel(); setPhase('idle'); setMessage('Setup closed. A browser-managed language download may continue; the microphone was not opened.') }}>Cancel voice setup</button>}
     <small role={phase === 'error' ? 'alert' : 'status'}>{message}</small>

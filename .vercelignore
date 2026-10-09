@@ -6,6 +6,8 @@
 /scripts/*
 !/scripts/check-ai-assets.mjs
 !/scripts/check-browser-ai.mjs
+!/scripts/prepare-offline.mjs
+!/scripts/service-worker.template.js
 !/package.json
 !/package-lock.json
 !/tsconfig.json

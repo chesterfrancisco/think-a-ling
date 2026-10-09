@@ -40,6 +40,7 @@ export async function enableBrowserAi() {
     if (!globalThis.caches) throw new Error('Browser model storage is unavailable. Try a regular browser window.')
     worker = new Worker(new URL('./browserVision.worker.ts', import.meta.url), { type: 'module' })
     worker.onmessage = ({ data }) => {
+      if (run !== generation) return
       if (data.type === 'download') publish({ status: 'downloading', loaded: data.loaded, total: data.total })
       if (data.type === 'compiling') publish({ status: 'compiling', message: 'Preparing the model for your device. First use may take longer.' })
       if (data.type === 'ready' || data.type === 'result') {
@@ -49,7 +50,7 @@ export async function enableBrowserAi() {
       }
       if (data.type === 'error') { stopBrowserAi(data.message); publish({ status: 'error', message: data.message }) }
     }
-    worker.onerror = () => { stopBrowserAi('The browser AI worker stopped. Retry, or use detection and text reading.'); publish({ status: 'error' }) }
+    worker.onerror = () => { if (run === generation) { stopBrowserAi('The browser AI worker stopped. Retry, or use detection and text reading.'); publish({ status: 'error' }) } }
     publish({ status: 'downloading', message: '' })
     await send('load', {})
   } catch (error) { if (run === generation) publish({ status: 'error', message: error instanceof Error ? error.message : String(error) }) }

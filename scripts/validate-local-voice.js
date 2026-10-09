@@ -10,6 +10,9 @@ export default async function validateLocalVoice(page) {
   try {
     const context = await browser.newContext({ permissions: ['microphone'] })
     const tab = await context.newPage()
+    // Replay scene setup only; speech below still uses the native recognizer.
+    const fixture = JSON.parse(await readFile(new URL('./fixtures/milestone2-ui-replay.json', import.meta.url), 'utf8'))
+    await context.route('**/local-ollama/api/chat', route => route.fulfill({ contentType: 'application/json', body: JSON.stringify({ done: true, message: { content: JSON.stringify(fixture.scene) } }) }))
     // Supply an actual audio track to the browser's recognizer. Native local
     // speech does not consistently consume Chromium's fake microphone flag.
     await tab.addInitScript(bytes => {
@@ -32,13 +35,15 @@ export default async function validateLocalVoice(page) {
     await tab.goto('http://localhost:5173/'); await dismissStory(tab)
     await tab.locator('input[type=file]').setInputFiles('test-images/desk.jpg')
     await tab.waitForFunction(() => document.querySelector('.viewfinder')?.dataset.ocrStatus === 'done' && document.querySelector('.viewfinder')?.dataset.detectionStatus === 'done')
-    await tab.getByRole('button', { name: 'Ask This Space', exact: true }).click()
+    await tab.getByRole('button', { name: 'Explore this photo', exact: true }).click()
+    await tab.locator('.scene-summary').waitFor()
+    await tab.getByRole('button', { name: 'Voice question', exact: true }).click()
     await tab.getByRole('button', { name: 'Enable local voice', exact: true }).click()
     await tab.waitForFunction(() => !document.querySelector('.local-voice')?.textContent.includes('Checking local'))
     if (await tab.getByRole('button', { name: 'Install English voice pack', exact: true }).isVisible()) {
       await tab.getByRole('button', { name: 'Install English voice pack', exact: true }).click()
     }
-    await tab.waitForFunction(() => document.querySelector('.local-voice')?.textContent.includes('Speak your question') || document.querySelector('.local-voice [role=alert]'), null, { timeout: 130000 })
+    await tab.waitForFunction(() => document.querySelector('.local-voice button[aria-label="Speak your question"]') || document.querySelector('.local-voice [role=alert]'), null, { timeout: 130000 })
     if (await tab.locator('.local-voice [role=alert]').count()) throw new Error(await tab.locator('.local-voice [role=alert]').innerText())
     await tab.getByRole('button', { name: 'Speak your question', exact: true }).click()
     await tab.waitForFunction(() => document.querySelector('#scene-goal')?.value.length > 0 || document.querySelector('.local-voice [role=alert]'), null, { timeout: 35000 })

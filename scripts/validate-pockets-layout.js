@@ -9,7 +9,8 @@ export default async function validatePocketsLayout(page) {
   try {
     await tab.goto('http://127.0.0.1:4173'); await dismissStory(tab)
     await tab.waitForFunction(() => Number(getComputedStyle(document.querySelector('.welcome')).opacity) > .99)
-    assert(await tab.locator('.home-purpose').isVisible())
+    assert.equal(await tab.locator('.home-purpose').count(), 0)
+    assert.equal(await tab.locator('.page-intro h1 br').count(), 0)
     await tab.screenshot({ path: 'test-results/home-desktop-refined.png', fullPage: true })
     for (const width of [390, 320]) {
       await tab.setViewportSize({ width, height: 844 })
@@ -45,7 +46,7 @@ export default async function validatePocketsLayout(page) {
     assert.equal(await tab.evaluate(() => JSON.parse(localStorage.getItem('think-a-ling.pockets.v1')).length), 0)
     assert.deepEqual(report.errors, [])
     assert.equal(report.requests.some(r => !['GET', 'HEAD'].includes(r.method)), false)
-    report.checks.push('Desktop purpose panel; centered Ling and no overflow at 390/320px', 'Actual OCR saved only on click; deduplicated; survives reload; no photo stored; review/delete persists; no upload or AI requests')
+    report.checks.push('Single-line desktop heading; centered Ling and no overflow at 390/320px', 'Actual OCR saved only on click; deduplicated; survives reload; no photo stored; review/delete persists; no upload or AI requests')
   } catch (error) { report.failure = error.stack; await tab.screenshot({ path: 'test-results/pockets-layout-failure.png', fullPage: true }) }
   finally { await context.close() }
   return report

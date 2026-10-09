@@ -1,6 +1,7 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig } from 'vite'
+import { defineConfig, loadEnv } from 'vite'
 import type { Plugin } from 'vite'
+import { validatePublicAccountConfig } from './src/services/publicAccountConfig.js'
 
 // This bridge is never installed in preview or production hosting.
 function localOllamaGuard(): Plugin {
@@ -36,8 +37,16 @@ function localOllamaGuard(): Plugin {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ mode }) => {
+  // Parallel test servers must use an isolated dependency cache (see scripts/serve-account-test.mjs).
+  const env = loadEnv(mode, process.cwd(), 'VITE_')
+  // Fail before Vite can embed an accidentally configured privileged key.
+  validatePublicAccountConfig(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY)
+  return {
   plugins: [react(), localOllamaGuard()],
+  // Worker-only OCR imports are missed by the initial dependency crawl; eager
+  // prebundling avoids a first-photo optimizer reload that discards the photo.
+  optimizeDeps: { include: ['tesseract.js'] },
   server: {
     host: 'localhost',
     port: 5173,
@@ -61,4 +70,5 @@ export default defineConfig({
   },
   // Vite otherwise inherits server.proxy in preview.
   preview: { host: '127.0.0.1', proxy: {} },
+  }
 })

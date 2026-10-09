@@ -21,6 +21,6 @@ export function AnalysisProgress({ phase, objectsReady, textReady, expectedMs }:
       <li aria-current="step"><Sparkles size={16} />Understanding</li>
     </ol>}
     {phase === 'intent' && <ol className="analysis-steps"><li className="complete"><Check size={16} />Context ready</li><li aria-current="step"><Sparkles size={16} />Answer & validation</li></ol>}
-    <p className="context-note">{percent >= 95 ? 'Taking a little longer. ' : ''}This is a time estimate. 100% means the answer is ready. You can cancel anytime.</p>
+    <p className="context-note">{percent >= 95 ? 'Taking a little longer. ' : ''}Analyzing… Please wait until processing is finished. You can cancel anytime.</p>
   </div>
 }
