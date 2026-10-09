@@ -1,0 +1,151 @@
+/* One photo, one interpretation, one place to ask. */
+.ling-mascot { display: block; width: 56px; height: 56px; flex-shrink: 0; }
+.mascot-welcome { display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
+.mascot-orbit { width: 260px; height: 260px; display: grid; place-items: center; background: #e1d7f7; border-radius: 50%; box-shadow: 0 0 0 18px #e8e0f6; }
+.mascot-orbit .ling-mascot { width: 245px; height: 245px; transform: rotate(-7deg); }
+.mascot-greeting { background: #fffefa; padding: 10px 23px; border-radius: 16px; font-size: 20px; font-weight: 750; transform: rotate(4deg); margin-top: -8px; z-index: 1; }
+.everyday-app .mascot-welcome p { margin: 18px 0 0; font-size: 13px; }
+.everyday-app:has(.has-image) .page-intro { padding: 20px 0 14px; }
+.everyday-app:has(.has-image) .page-intro .eyebrow, .everyday-app:has(.has-image) .page-intro > p { display: none; }
+.everyday-app:has(.has-image) .page-intro h1 { font-size: 28px; margin: 0; letter-spacing: -1px; }
+.scene-summary { display: flex; align-items: start; gap: 19px; padding: 24px 26px; margin: 22px 0 18px; border-radius: 24px; background: #eee8f9; }
+.scene-summary .ling-mascot { width: 72px; height: 72px; }
+.scene-summary > div { min-width: 0; }
+.scene-summary .sheet-kicker { color: #7555a5; font-size: 10px; letter-spacing: 1.2px; }
+.scene-summary .scene-description { font: 650 clamp(18px, 2vw, 24px)/1.55 Manrope, sans-serif; letter-spacing: -.4px; margin: 8px 0 10px; overflow-wrap: anywhere; }
+.scene-summary small, .scene-summary details { font-size: 12px; line-height: 1.6; color: #6c617b; }
+.scene-summary details { margin-top: 8px; }
+.scene-summary summary { cursor: pointer; }
+.intent-choices { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 20px; }
+.intent-choices button { display: flex; align-items: center; gap: 12px; text-align: left; background: #fff; border: 1px solid #e4dfeb; border-radius: 18px; padding: 16px; color: #4a405a; }
+.intent-choices button.selected { background: #edf4da; border-color: #b9d87d; }
+.intent-choices button svg { flex-shrink: 0; color: #7251ab; }
+.intent-choices strong { display: block; font-size: 14px; margin-bottom: 5px; }
+.intent-choices small { display: block; font-size: 11px; line-height: 1.5; color: #73697d; }
+.everyday-app .has-image .reasoning-drawer { align-self: start; max-height: none; overflow: visible; }
+.everyday-app .has-image.has-drawer { align-items: start; }
+.everyday-app .has-image .image-stage { align-self: start; }
+.everyday-app .has-image:not(.has-drawer) { --discovery-image-height: min(80svh, 900px); }
+.everyday-app .has-image figcaption { display: none; }
+.photo-actions { grid-column: 1 / -1; width: 100%; order: 5; display: flex; flex-wrap: wrap; align-items: center; gap: 16px; border-top: 1px solid #ffffff20; padding-top: 15px; }
+.photo-hint { color: #d5cedf; font-size: 12px; line-height: 1.6; margin-right: auto; }
+.photo-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.photo-actions button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 12px; background: #ffffff12; border-radius: 13px; font-size: 12px; color: #f3eef9; }
+.photo-actions .error { width: 100%; color: #ffcac0; }
+.photo-actions .quick-progress { border: 0; padding: 0; width: auto; flex: 1; }
+.everyday-app .back-to-start { display: flex; align-items: center; gap: 7px; background: #ffffff14; color: #fff; padding: 10px 13px; border-radius: 14px; min-height: 42px; font-size: 13px; }
+.floating-ask { position: fixed; right: max(24px, calc((100vw - 1320px) / 2)); bottom: 24px; z-index: 35; display: flex; align-items: center; gap: 8px; border: 1px solid #d7c8ee; border-radius: 22px; padding: 7px 19px 7px 7px; background: #f2ebff; color: #352745; box-shadow: 0 6px 24px #37205426; font-size: 15px; font-weight: 700; min-height: 58px; }
+.floating-ask .ling-mascot { width: 47px; height: 47px; }
+.ask-heading { display: flex; align-items: center; gap: 9px; margin: 0 15px 15px 0; }
+.ask-heading .ling-mascot { width: 49px; height: 49px; }
+.everyday-app .ask-heading h2 { font-size: 23px; line-height: 1.25; margin-top: 5px; padding-right: 0; }
+.everyday-app .ask-heading .sheet-kicker { font-size: 8px; letter-spacing: .8px; margin-right: 0; }
+.everyday-app .shared-scene { border: 0; margin: 0; }
+.everyday-app .intent-result { margin-top: 0; }
+.everyday-app .shared-scene > .intent-result { margin-top: 24px; }
+.reasoning-drawer { scroll-margin-top: 20px; }
+.selected-intent { display: flex; gap: 10px; align-items: start; background: #edf4da; border: 1px solid #c5dc95; border-radius: 15px; padding: 13px 14px; margin-bottom: 20px; color: #3f4a2d; }
+.selected-intent-dot { width: 8px; height: 8px; border-radius: 50%; background: #6a8d29; margin-top: 5px; flex-shrink: 0; }
+.selected-intent strong { display: block; font-size: 13px; line-height: 1.4; }
+.selected-intent div > span { display: block; font-size: 11px; line-height: 1.5; margin-top: 3px; }
+.everyday-app .reasoning-panel .suggestion-caption { font-size: 11px; color: #756980; margin: 13px 0 5px; line-height: 1.5; }
+.everyday-app .reasoning-panel .suggestions { display: flex; flex-direction: column; align-items: stretch; gap: 7px; }
+.everyday-app .reasoning-panel .suggestions button { margin: 0; text-align: left; line-height: 1.5; border: 1px solid #e0d5ed; padding: 10px 12px; white-space: normal; overflow-wrap: anywhere; }
+.everyday-app .reasoning-panel .suggestions button[aria-pressed=true] { background: #e2efd0; border-color: #aaca73; }
+.answer-mode { display: inline-block; font-size: 10px; font-weight: 500; background: #ede7f6; color: #67507c; padding: 5px 8px; margin-left: 5px; border-radius: 10px; }
+.text-dialog textarea { width: 100%; font-family: inherit; font-size: 16px; line-height: 1.7; padding: 14px; border: 1px solid #ddd5e9; border-radius: 13px; resize: vertical; background: #fffdf7; color: #352745; }
+.text-dialog > button:not(.sheet-close) { background: #e9e1f7; padding: 12px 15px; border-radius: 12px; margin: 14px 8px 0 0; font-size: 14px; min-height: 44px; }
+.everyday-app footer { padding-bottom: 85px; }
+.everyday-app.is-home footer { padding-bottom: 12px; justify-content: center; }
+.is-thinking { animation: ling-breathe 2s ease-in-out infinite; }
+@keyframes ling-breathe { 50% { transform: translateY(-3px) rotate(3deg); } }
+@media (max-width: 900px) { .intent-choices { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+  .mascot-orbit { width: 180px; height: 180px; box-shadow: 0 0 0 10px #e8e0f6; }
+  .mascot-orbit .ling-mascot { width: 175px; height: 175px; }
+  .mascot-greeting { font-size: 17px; }
+  .everyday-app .mascot-welcome { margin: 16px 0 5px; }
+  .scene-summary { gap: 10px; padding: 18px 15px; margin-top: 15px; }
+  .scene-summary .ling-mascot { width: 46px; height: 46px; }
+  .scene-summary .scene-description { font-size: 17px; }
+  .scene-summary small { font-size: 11px; }
+  .intent-choices { gap: 8px; }
+  .intent-choices button { padding: 12px 10px; gap: 8px; align-items: start; }
+  .intent-choices strong { font-size: 12px; }
+  .intent-choices small { font-size: 10px; }
+  .intent-choices svg { width: 17px; height: 17px; }
+  .floating-ask { bottom: max(16px, env(safe-area-inset-bottom)); right: 16px; padding-right: 15px; min-height: 56px; font-size: 14px; }
+  .photo-actions { gap: 10px; }
+  .photo-buttons { width: 100%; }
+  .photo-buttons button { flex: 1; justify-content: center; font-size: 11px; padding: 10px 8px; }
+  .everyday-app .photo-next { font-size: 11px; }
+}
+@media (prefers-reduced-motion: reduce) { .is-thinking { animation: none; } }
+
+/* Truthful stage-based progress and per-photo label corrections. */
+.replay-story { display: block; margin: -14px auto 24px; background: transparent; color: #78658f; min-height: 44px; font-size: 12px; }
+.everyday-app .viewfinder .scene-summary { grid-column: 1 / -1; order: 6; margin: 0; width: 100%; color: #30283f; }
+.everyday-app .viewfinder .scene-summary p { overflow-wrap: anywhere; }
+.everyday-app .viewfinder + .intent-choices { margin-top: 18px; }
+.correction-note { margin-top: 9px; font-size: 12px; color: #716080; line-height: 1.6; }
+.ling-progress-track { height: 7px; overflow: hidden; background: #ded4ed; border-radius: 99px; margin: 18px 0; }
+.ling-progress-track span { display: block; width: 32%; height: 100%; border-radius: inherit; background: #8461c8; animation: ling-scan 1.8s ease-in-out infinite alternate; }
+@keyframes ling-scan { from { transform: translateX(-90%); } to { transform: translateX(300%); } }
+.analysis-steps { list-style: none; padding: 0 !important; display: flex; flex-wrap: wrap; gap: 10px 14px; }
+.analysis-steps li { display: inline-flex; gap: 5px; align-items: center; font-size: 11px !important; margin: 0 !important; color: #867990; }
+.analysis-steps li.complete { color: #507424; }
+.analysis-steps li[aria-current] { color: #7650b7; }
+.object-detail-card .correct-label, .object-detail-card .clearer-photo { background: none; color: #7656a9; padding: 6px 0; font-size: 12px; min-height: 40px; text-align: left; }
+.object-detail-card .correct-label { margin: -8px 0 10px; }
+.label-editor { padding: 14px; border-radius: 15px; background: #eee8f8; margin-bottom: 15px; }
+.label-editor label { display: block; font-size: 13px; margin-bottom: 8px; }
+.label-editor input { width: 100%; padding: 12px; border: 1px solid #cfc1e2; border-radius: 10px; font: inherit; font-size: 16px; }
+.label-editor button { min-height: 44px; padding: 11px 14px; margin: 10px 6px 6px 0; border-radius: 12px; background: #c7f34b; color: #30283f; font-size: 12px; }
+.label-editor p { font-size: 11px; color: #71647f; line-height: 1.6; }
+@media (prefers-reduced-motion: reduce) { .ling-progress-track span { animation: none; transform: translateX(110%); } }
+
+.object-chat-context { background: #f0eaf8; border-radius: 12px; padding: 11px 13px; font-size: 13px; margin-bottom: 15px; }
+.object-chat-context span { display: block; font-size: 11px; margin-top: 3px; color: #70617d; }
+.detection-confidence { font-size: 12px; color: #665077; margin: -4px 0 12px; line-height: 1.5; }
+.detection-confidence small { display: block; font-size: 10px; color: #746c7b; margin-top: 3px; }
+.stage-count { display: flex; align-items: baseline; gap: 8px; margin-top: 16px; color: #6d4bae; }
+.stage-count > strong { font: 800 28px/1.2 Manrope, sans-serif; }
+.stage-count > span { font-size: 11px; }
+.ling-progress-track.measured-stages span { animation: none; transform: none; transition: width .3s ease; background: #7a56b8; }
+.everyday-app .answer-ready { color: #5c7139; font-size: 10px; margin: 6px 0 10px; }
+.summary-ready-notice { position: fixed; left: max(20px, calc((100vw - 1320px) / 2)); bottom: 24px; z-index: 36; display: flex; align-items: center; border-radius: 18px; background: #e8f5ca; border: 1px solid #c6da9c; box-shadow: 0 6px 24px #37205426; max-width: min(390px, calc(100vw - 40px)); color: #3c492c; }
+.summary-ready-notice button { background: transparent; color: inherit; display: flex; align-items: center; gap: 10px; padding: 14px; min-height: 44px; text-align: left; }
+.summary-ready-notice button:last-child { padding: 10px; margin-right: 4px; }
+.summary-ready-notice strong { display: block; font-size: 11px; letter-spacing: .6px; }
+.summary-ready-notice small { display: block; font-size: 11px; line-height: 1.4; margin-top: 3px; }
+.scene-summary { scroll-margin-top: 20px; }
+.fullscreen-tools { display: none; }
+.everyday-app .has-image .image-stage:fullscreen { display: grid; place-items: center; width: 100vw; height: 100dvh; background: #101113; padding: 0; overflow: hidden; }
+.image-stage:fullscreen figure { display: grid; place-items: center; margin: 0; width: 100%; height: 100%; }
+.everyday-app .image-stage:fullscreen .image-preview { width: min(100vw, calc(100dvh * var(--image-ratio))); max-width: 100vw; }
+.everyday-app .image-stage:fullscreen .image-preview img { width: 100%; height: auto; max-height: 100dvh; object-fit: contain; border-radius: 0; }
+.image-stage:fullscreen figcaption, .picture-dialog figcaption { display: none; }
+.image-stage:fullscreen .fullscreen-tools, .picture-dialog[open] .fullscreen-tools { position: absolute; display: flex; gap: 8px; right: 16px; top: 16px; z-index: 10; }
+.fullscreen-tools button { display: flex; align-items: center; gap: 7px; border-radius: 99px; padding: 12px 16px; min-height: 44px; background: #24202eeb; color: white; font-size: 13px; }
+.picture-dialog[open] { display: grid; place-items: center; position: fixed; inset: 0; width: 100vw; max-width: none; height: 100dvh; max-height: none; padding: 0; border: 0; margin: 0; background: #101113; }
+.picture-dialog figure { display: grid; place-items: center; margin: 0; width: 100%; height: 100%; }
+.picture-dialog .image-preview { width: min(100vw, calc(100dvh * var(--image-ratio))); max-width: 100vw; }
+.picture-dialog .image-preview img { width: 100%; height: auto; max-height: 100dvh; object-fit: contain; border-radius: 0; }
+.picture-dialog .detection-hotspot { overflow: visible; }
+.picture-dialog::backdrop { background: #101113; }
+.everyday-app .viewfinder.has-camera { height: auto !important; min-height: 0 !important; padding: 76px 24px 22px; }
+.has-camera .live-camera { position: relative; inset: auto; width: 100%; gap: 16px; }
+.has-camera .live-video-stage { flex: none; min-height: 140px; }
+.has-camera .video-preview { width: fit-content; max-width: 100%; }
+.has-camera .video-preview video, .has-camera .captured-preview { display: block; width: auto; height: auto; max-width: 100%; max-height: 58svh; border-radius: 14px; object-fit: contain; }
+.capture-review-title { font-size: 16px; font-weight: 650; }
+.capture-review-actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 12px; margin: 16px auto 0; }
+.live-camera-status .capture-review-actions button { width: auto; min-width: 145px; min-height: 48px; margin: 0; padding: 13px 18px; font-size: 14px; justify-content: center; }
+.has-camera .live-camera-status { font-size: 14px; }
+.has-camera .live-camera-status small { font-size: 12px; }
+@media (max-width: 640px) {
+  .everyday-app .viewfinder.has-camera { padding: 74px 12px 18px; }
+  .has-camera .live-camera-toolbar select { max-width: 195px; }
+  .live-camera-status .capture-review-actions button { flex: 1; min-width: 0; padding: 12px; }
+}
+@media (max-width: 640px) { .summary-ready-notice { left: 16px; bottom: 87px; max-width: calc(100vw - 32px); } .everyday-app .camera-tools { gap: 5px; } .everyday-app .camera-tools button { width: 35px; height: 35px; } }

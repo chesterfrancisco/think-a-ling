@@ -1,0 +1,4 @@
+# These vendored files are verified byte-for-byte by the AI asset manifest.
+# Never translate their line endings during Git add/checkout on Windows.
+public/ai/** -text
+public/fonts/** -text

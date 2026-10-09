@@ -1,9 +1,17 @@
 {
-  "name": "thing-a-ling",
+  "name": "think-a-ling",
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "engines": { "node": "24.x" },
   "scripts": {
+    "setup:ai": "node scripts/prepare-ai-assets.mjs",
+    "check:ai": "node scripts/check-ai-assets.mjs",
+    "test:reasoning": "node --experimental-strip-types --test scripts/reasoning.test.mjs scripts/scene-intent.test.mjs",
+    "test": "node --experimental-strip-types --test scripts/*.test.mjs",
+    "prebuild": "npm run check:ai",
+    "postbuild": "node scripts/check-ai-assets.mjs --dist",
+    "test:production": "node scripts/validate-production.mjs",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",

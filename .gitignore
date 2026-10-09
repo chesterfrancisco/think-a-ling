@@ -10,7 +10,15 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.playwright-mcp/
+.vercel/
+test-results/
 *.local
+.env
+.env.*
+!.env.example
+# Keep local editor workspace settings out of the shared repository.
+thing-a-ling.code-workspace
 
 # Editor directories and files
 .vscode/*

@@ -2,9 +2,14 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- Keep inference assets same-origin and block MediaPipe usage telemetry.
+         Explicit loopback WebSocket URLs allow Vite development HMR. -->
+    <meta http-equiv="Content-Security-Policy" content="connect-src 'self' ws://localhost:5173 ws://127.0.0.1:5173; form-action 'none'" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>thing-a-ling</title>
+    <meta name="theme-color" content="#0f1012" />
+    <meta name="description" content="Think-a-ling! — Everyday Action Intelligence. Discover what you can understand, use, fix and improve using what’s already around you." />
+    <title>Think-a-ling! · Point at anything. Know what to do.</title>
   </head>
   <body>
     <div id="root"></div>

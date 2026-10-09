@@ -1,0 +1,15 @@
+.mode-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.reasoning-panel button + button { margin-left: 8px; }
+.reasoning-panel .mode-buttons button { margin-left: 0; }
+.reasoning-panel input { width: 100%; padding: 10px; border: 1px solid #c0cdd6; border-radius: 6px; }
+.reasoning-panel h3 { font-size: 1rem; margin-top: 24px; }
+.context-note { color: #516676; font-size: .85rem; }
+.local-notice { background: #f1f4f7; padding: 12px; border-radius: 6px; }
+.reasoning-result { border-top: 1px solid #d7e0e6; margin-top: 12px; }
+.reasoning-result pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 12px; background: #f4f6f8; max-height: 400px; overflow: auto; font-size: .8rem; }
+.shared-scene { border-top: 1px solid #d7e0e6; margin-top: 12px; }
+.shared-scene pre { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 400px; overflow: auto; padding: 12px; background: #f4f6f8; font-size: .8rem; }
+.shared-scene details { margin: 12px 0; }
+.intent-result { border-top: 1px solid #d7e0e6; margin-top: 20px; padding-top: 8px; }
+.evidence-references { border-left: 2px solid #c9d6cf; padding-left: 10px; margin: 8px 0; }
+.study-card { padding: 10px; background: #f4f6f8; border-radius: 6px; }

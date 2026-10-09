@@ -1,0 +1,12 @@
+.ling-steps { margin: 18px 0; padding: 15px; border-radius: 18px; background: #f0eaf8; border: 1px solid #ddd1ed; }
+.reasoning-panel .steps-toggle { display: flex; align-items: center; gap: 9px; min-height: 44px; background: #cef24f; color: #292335; font-weight: 700; }
+.steps-content h4 { margin: 18px 0 8px; }
+.reasoning-panel .steps-disclosure, .reasoning-panel .step-caveat { font-size: 12px; line-height: 1.6; color: #625772; }
+.reasoning-panel .steps-count { font-size: 12px; color: #526629; font-weight: 650; }
+.steps-content ol { padding-left: 0; list-style: none; }
+.steps-content li { margin: 14px 0; padding: 14px; background: #fff; border-radius: 12px; overflow-wrap: anywhere; }
+.reasoning-panel .step-choice { display: flex; gap: 10px; align-items: flex-start; min-height: 44px; cursor: pointer; font-size: 14px; }
+.reasoning-panel .step-choice input { width: 21px; height: 21px; flex: 0 0 21px; margin: 2px 0; padding: 0; accent-color: #7654b4; }
+.step-choice input:checked + strong { color: #617039; }
+.step-caveat { display: block; margin: 8px 0; }
+.steps-content details { margin-top: 10px; font-size: 12px; }

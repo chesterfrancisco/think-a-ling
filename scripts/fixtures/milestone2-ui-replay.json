@@ -1,0 +1,102 @@
+{
+  "provenance": "UI REPLAY ONLY. Scene projection reconstructed from the actual 2026-10-09 Milestone 2 desk result; intent responses are verbatim recorded model outputs. Not a new inference/accuracy test. Not imported by application code.",
+  "scene": {
+    "scene_description": "A single, rectangular office desk is presented. The desk surface is a light brown color, and the legs are a dark gray color. There are two circular holes on the desk surface, one on each side.",
+    "visible_objects": [
+      {
+        "name": "desk",
+        "evidence": "The desk is rectangular with a light brown surface and dark gray legs. There are two circular holes on the desk surface."
+      }
+    ],
+    "object_affordances": [
+      {
+        "object": "desk",
+        "use": "support",
+        "basis": "desk: The desk is rectangular with a light brown surface and dark gray legs. There are two circular holes on the desk surface."
+      }
+    ],
+    "visible_issues": [],
+    "potential_improvements": [],
+    "matches": [],
+    "relationships": [],
+    "uncertainty_notes": []
+  },
+  "turns": [
+    {
+      "mode": "EXPLORE",
+      "response": {
+        "status": "answered",
+        "answer": "The desk is a basic office desk with a light brown surface and dark gray legs. It has two circular holes on the surface.",
+        "observations": [
+          {
+            "statement": "The desk is rectangular with a light brown surface and dark gray legs. There are two circular holes on the desk surface.",
+            "evidence_ids": [
+              "E1"
+            ]
+          }
+        ],
+        "suggestions": [
+          {
+            "title": "Potential Study Use",
+            "description": "You could use the desk to place books, papers, and a laptop for studying.",
+            "kind": "study",
+            "evidence_ids": [
+              "E1",
+              "E1"
+            ],
+            "uncertainty": "The purpose of the holes is unknown."
+          }
+        ],
+        "issues": [],
+        "study_cards": [],
+        "uncertainty_notes": []
+      }
+    },
+    {
+      "mode": "FIND",
+      "response": {
+        "status": "answered",
+        "answer": "The desk can be used for studying. You could place books, papers, and a laptop on it.",
+        "observations": [],
+        "suggestions": [],
+        "issues": [],
+        "study_cards": [],
+        "uncertainty_notes": []
+      }
+    },
+    {
+      "mode": "FIX",
+      "response": {
+        "status": "answered",
+        "answer": "The desk is rectangular with a light brown surface and dark gray legs. There are two circular holes on the surface.",
+        "observations": [],
+        "suggestions": [],
+        "issues": [],
+        "study_cards": [],
+        "uncertainty_notes": []
+      }
+    },
+    {
+      "mode": "IMPROVE",
+      "response": {
+        "status": "answered",
+        "answer": "To better use the desk for focused study, you could place books, papers, and a laptop on it (E1). The two circular holes are present on the desk surface.",
+        "observations": [],
+        "suggestions": [
+          {
+            "title": "Organize Study Materials",
+            "description": "Arrange your books and papers neatly on the desk surface to minimize distractions (E1).",
+            "kind": "improve",
+            "evidence_ids": [
+              "E1"
+            ],
+            "uncertainty": "The arrangement is a suggestion."
+          }
+        ],
+        "issues": [],
+        "study_cards": [],
+        "uncertainty_notes": []
+      }
+    }
+  ]
+}

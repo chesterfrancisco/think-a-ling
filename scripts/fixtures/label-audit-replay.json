@@ -1,0 +1,103 @@
+﻿{
+    "provenance":  "Actual gemma3:4b product-label image and text-only intent response captured 2026-10-09. Replay for UI grounding checks only; not new inference.",
+    "scene":  {
+                  "description":  "A white label is present. The label contains text and a warning.",
+                  "objects":  [
+                                  {
+                                      "id":  "vision-0",
+                                      "name":  "label",
+                                      "source":  "gemma",
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E1"
+                                                      ]
+                                  }
+                              ],
+                  "ocr":  {
+                              "status":  "complete",
+                              "text":  "DESK CLEANER\n\nSurface cleaner\n\nWARNING: Keep out of reach of children.\nDo not mix with bleach.\n\nUse in a well-ventilated area."
+                          },
+                  "evidence":  [
+                                   {
+                                       "id":  "E1",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "label: The label is white and rectangular. It contains text and a warning."
+                                   },
+                                   {
+                                       "id":  "E2",
+                                       "source":  "tesseract",
+                                       "kind":  "observed",
+                                       "description":  "DESK CLEANER"
+                                   },
+                                   {
+                                       "id":  "E3",
+                                       "source":  "tesseract",
+                                       "kind":  "observed",
+                                       "description":  "Surface cleaner"
+                                   },
+                                   {
+                                       "id":  "E4",
+                                       "source":  "tesseract",
+                                       "kind":  "observed",
+                                       "description":  "WARNING: Keep out of reach of children."
+                                   },
+                                   {
+                                       "id":  "E5",
+                                       "source":  "tesseract",
+                                       "kind":  "observed",
+                                       "description":  "Do not mix with bleach."
+                                   },
+                                   {
+                                       "id":  "E6",
+                                       "source":  "tesseract",
+                                       "kind":  "observed",
+                                       "description":  "Use in a well-ventilated area."
+                                   },
+                                   {
+                                       "id":  "E7",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "The label contains text."
+                                   }
+                               ],
+                  "relationships":  [
+                                        {
+                                            "subject":  "label",
+                                            "relation":  "contains",
+                                            "object":  "text",
+                                            "kind":  "observed",
+                                            "evidenceIds":  [
+                                                                "E7"
+                                                            ]
+                                        }
+                                    ],
+                  "visibleIssues":  [
+
+                                    ],
+                  "uncertainty":  [
+
+                                  ]
+              },
+    "response":  {
+                     "status":  "answered",
+                     "answer":  "The label identifies the product as \u0027Desk Cleaner,\u0027 a surface cleaner with the warning \u0027Keep out of reach of children,\u0027 the instruction \u0027Do not mix with bleach,\u0027 and the recommendation \u0027Use in a well-ventilated area.\u0027",
+                     "observations":  [
+
+                                      ],
+                     "suggestions":  [
+
+                                     ],
+                     "issues":  [
+
+                                ],
+                     "study_cards":  [
+
+                                     ],
+                     "uncertainty_notes":  [
+                                               "The warning regarding children is a standard precaution."
+                                           ]
+                 }
+}

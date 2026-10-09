@@ -1,0 +1,268 @@
+﻿{
+    "provenance":  "UI replay only: actual M3.1 camera scene and verbatim Find response, used to verify object response retention, not answer relevance or fresh inference.",
+    "scene":  {
+                  "id":  "20e67222-7a45-4167-8786-bec9c73ac408",
+                  "image":  {
+                                "name":  "camera-1791540610263.png",
+                                "width":  640,
+                                "height":  320,
+                                "url":  "blob:http://localhost:5173/ae4c37fd-4686-453d-8936-ce1ec6c88517"
+                            },
+                  "description":  "A studio photograph featuring three animals against a pink background. A light grey poodle sits in the foreground, a corgi stands to the right, and two cats are positioned on the left.",
+                  "objects":  [
+                                  {
+                                      "id":  "mp-0",
+                                      "name":  "dog",
+                                      "source":  "mediapipe",
+                                      "boundingBox":  {
+                                                          "x":  339,
+                                                          "y":  85,
+                                                          "width":  150,
+                                                          "height":  240
+                                                      },
+                                      "confidence":  0.7253671884536743,
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E1"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "mp-1",
+                                      "name":  "dog",
+                                      "source":  "mediapipe",
+                                      "boundingBox":  {
+                                                          "x":  205,
+                                                          "y":  115,
+                                                          "width":  138,
+                                                          "height":  201
+                                                      },
+                                      "confidence":  0.677936315536499,
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E2"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "mp-2",
+                                      "name":  "cat",
+                                      "source":  "mediapipe",
+                                      "boundingBox":  {
+                                                          "x":  464,
+                                                          "y":  219,
+                                                          "width":  111,
+                                                          "height":  99
+                                                      },
+                                      "confidence":  0.6718848943710327,
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E3"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "mp-3",
+                                      "name":  "cat",
+                                      "source":  "mediapipe",
+                                      "boundingBox":  {
+                                                          "x":  43,
+                                                          "y":  213,
+                                                          "width":  188,
+                                                          "height":  105
+                                                      },
+                                      "confidence":  0.668535590171814,
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E4"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "vision-0",
+                                      "name":  "poodle",
+                                      "source":  "gemma",
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E5"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "vision-1",
+                                      "name":  "corgi",
+                                      "source":  "gemma",
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E6"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "vision-2",
+                                      "name":  "cat_1",
+                                      "source":  "gemma",
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E7"
+                                                      ]
+                                  },
+                                  {
+                                      "id":  "vision-3",
+                                      "name":  "cat_2",
+                                      "source":  "gemma",
+                                      "purposes":  [
+
+                                                   ],
+                                      "evidenceIds":  [
+                                                          "E8"
+                                                      ]
+                                  }
+                              ],
+                  "ocr":  {
+                              "text":  "",
+                              "language":  "eng",
+                              "status":  "complete",
+                              "evidenceIds":  [
+
+                                              ]
+                          },
+                  "evidence":  [
+                                   {
+                                       "id":  "E1",
+                                       "source":  "mediapipe",
+                                       "kind":  "observed",
+                                       "description":  "Detector prediction: dog, confidence 72.5%."
+                                   },
+                                   {
+                                       "id":  "E2",
+                                       "source":  "mediapipe",
+                                       "kind":  "observed",
+                                       "description":  "Detector prediction: dog, confidence 67.8%."
+                                   },
+                                   {
+                                       "id":  "E3",
+                                       "source":  "mediapipe",
+                                       "kind":  "observed",
+                                       "description":  "Detector prediction: cat, confidence 67.2%."
+                                   },
+                                   {
+                                       "id":  "E4",
+                                       "source":  "mediapipe",
+                                       "kind":  "observed",
+                                       "description":  "Detector prediction: cat, confidence 66.9%."
+                                   },
+                                   {
+                                       "id":  "E5",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "poodle: The poodle is light grey and sits in the foreground of the image."
+                                   },
+                                   {
+                                       "id":  "E6",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "corgi: The corgi is orange and white and stands to the right of the image."
+                                   },
+                                   {
+                                       "id":  "E7",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "cat_1: The first cat is grey and white and lies on the left side of the image."
+                                   },
+                                   {
+                                       "id":  "E8",
+                                       "source":  "gemma",
+                                       "kind":  "observed",
+                                       "description":  "cat_2: The second cat is grey and white and sits on the left side of the image."
+                                   }
+                               ],
+                  "relationships":  [
+
+                                    ],
+                  "visibleIssues":  [
+
+                                    ],
+                  "uncertainty":  [
+
+                                  ],
+                  "elapsedMs":  48788.20000000298,
+                  "modelMs":  48194.6277
+              },
+    "turn":  {
+                 "sceneId":  "20e67222-7a45-4167-8786-bec9c73ac408",
+                 "intent":  {
+                                "mode":  "FIND",
+                                "goal":  "Find something in this scene that can charge my phone. If nothing supports this, say so; do not assume unseen equipment."
+                            },
+                 "response":  {
+                                  "status":  "needs-more-evidence",
+                                  "answer":  "I cannot identify any objects in this scene that can charge a phone. The scene only contains dogs, cats, and their colors.",
+                                  "observations":  [
+                                                       {
+                                                           "statement":  "The scene contains three dogs and two cats.",
+                                                           "evidence_ids":  [
+                                                                                "E1",
+                                                                                "E2",
+                                                                                "E3",
+                                                                                "E4"
+                                                                            ]
+                                                       },
+                                                       {
+                                                           "statement":  "The poodle is light grey and sits in the foreground.",
+                                                           "evidence_ids":  [
+                                                                                "E5"
+                                                                            ]
+                                                       },
+                                                       {
+                                                           "statement":  "The corgi is orange and white and stands to the right.",
+                                                           "evidence_ids":  [
+                                                                                "E6"
+                                                                            ]
+                                                       },
+                                                       {
+                                                           "statement":  "The first cat is grey and white and lies on the left side.",
+                                                           "evidence_ids":  [
+                                                                                "E7"
+                                                                            ]
+                                                       },
+                                                       {
+                                                           "statement":  "The second cat is grey and white and sits on the left side.",
+                                                           "evidence_ids":  [
+                                                                                "E8"
+                                                                            ]
+                                                       }
+                                                   ],
+                                  "suggestions":  [
+
+                                                  ],
+                                  "issues":  [
+
+                                             ],
+                                  "study_cards":  [
+
+                                                  ],
+                                  "uncertainty_notes":  [
+
+                                                        ]
+                              },
+                 "grounding":  {
+                                   "studyCards":  [
+
+                                                  ],
+                                   "warnings":  [
+
+                                                ]
+                               },
+                 "elapsedMs":  32992.29999999702,
+                 "modelMs":  32986.0767
+             }
+}
