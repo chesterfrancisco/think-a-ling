@@ -1,4 +1,5 @@
 import { dismissStory } from './dismiss-story.js'
+import { chooseSceneMode } from './choose-scene-mode.js'
 import { readFile } from 'node:fs/promises'
 
 import { observeReasoning } from './observe-reasoning.js'
@@ -73,7 +74,7 @@ export default async function validateMilestone3(page) {
     assert(await tab.locator('.intent-choices button').count() === 4, 'Four clearly described choices after analysis')
     assert(await tab.locator('.viewfinder').getAttribute('data-ocr-status') === 'done', 'Actual OCR did not finish')
     for (const mode of ['EXPLORE', 'FIND', 'FIX', 'IMPROVE']) {
-      await tab.locator('.intent-choices button[data-mode=' + mode + ']').click()
+      await chooseSceneMode(tab, mode)
       await tab.locator('#scene-goal').fill(mode === 'EXPLORE' ? 'What is this desk useful for?' : 'Help me with this goal in ' + mode)
       const observedIntent = capture.next()
       await tab.locator('#scene-goal').press('Enter')
@@ -117,7 +118,7 @@ export default async function validateMilestone3(page) {
     await tab.locator('#scene-goal').fill('Explain this scene again.')
     await tab.getByRole('button', { name: 'Ask scene', exact: true }).click()
     await sent
-    await tab.getByRole('button', { name: 'Find', exact: true }).click()
+    await chooseSceneMode(tab, 'FIND')
     await done()
     await pending.abort().catch(() => {})
     assert(await tab.locator('.reasoning-panel').getAttribute('data-scene-id') === id, 'Cancelling via mode switch discarded scene')
@@ -126,7 +127,7 @@ export default async function validateMilestone3(page) {
     for (const width of [390, 320]) {
       await tab.setViewportSize({ width, height: 844 })
       assert(await overflow(), 'Mobile horizontal overflow at ' + width)
-      await tab.getByRole('button', { name: 'Explore', exact: true }).click()
+      await chooseSceneMode(tab, 'EXPLORE')
       await tab.locator('.reasoning-drawer').evaluate(node => { node.scrollTop = 0 })
       await tab.screenshot({ path: 'test-results/milestone3-mobile-' + width + '-sheet.png', fullPage: true, animations: 'disabled' })
       await tab.getByRole('button', { name: 'Close panel' }).click()

@@ -18,6 +18,10 @@ import { discoveryKey } from './objectDiscovery'
 import { LingSteps } from './LingSteps'
 import { lingStepsKey } from '../services/lingSteps'
 import type { LingStepsState } from '../services/lingSteps'
+import { SaveDiscovery } from './LingPockets'
+import { pocketFromTurn } from '../services/pockets'
+import { VoiceInput } from './VoiceInput'
+import { modeForGoal } from '../services/modeRelevance'
 
 interface Props {
   image?: UploadedImage
@@ -35,6 +39,8 @@ interface Props {
   objectLabel?: string
   autoBuild?: boolean
   corrections: LabelCorrection[]
+  onVoiceMode?: (mode: ReasoningMode) => void
+  visible?: boolean
 }
 
 const sourceNames = { mediapipe: 'Object recognition', tesseract: 'Text in the photo', gemma: 'Gemma interpretation', smolvlm: 'Experimental browser interpretation', user: 'Your label correction' }
@@ -54,6 +60,7 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
     <p>{response.answer}</p>
     {turn.grounding.warnings.map((warning, i) => <p className="local-notice" key={i}>{warning}</p>)}
     <LingSteps turn={turn} scene={scene} state={stepsState} onChange={onStepsChange} />
+    <SaveDiscovery draft={pocketFromTurn(scene, turn)} />
     <details><summary>What supports this answer?</summary>
     {!!turn.grounding.answerTextMatches?.length && <div className="answer-text-matches"><h4>Matching text from your photo</h4><p className="context-note">These lines also appear in the answer. Text matches do not verify the rest of the interpretation.</p><EvidenceReferences ids={turn.grounding.answerTextMatches} scene={scene} /></div>}
     
@@ -86,7 +93,7 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
   </article>
 }
 
-export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel }: Props) {
+export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true }: Props) {
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [scene, setScene] = useState<SceneAnalysis>()
@@ -264,6 +271,7 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     <div className="selected-intent" data-mode={mode} role="status"><span className="selected-intent-dot" /><div><strong>{intentPresentation[mode].label}</strong><span>{intentPresentation[mode].hint}</span></div></div>
     {objectFocus && <p className="object-chat-context">About <strong>{objectLabel ?? objectFocus.label}</strong><span>Answers stay with this selected object.</span></p>}
     {!ollamaAvailable && <BrowserAiSetup />}
+    {image && <VoiceInput key={image.url + (focusKey ?? '') + mode + visible + processing + localReasoningAvailable + (status === 'loading')} disabled={!visible || status === 'loading' || processing || !localReasoningAvailable} onTranscript={text => { setGoal(text); const next = modeForGoal(text); if (next) onVoiceMode?.(next) }} />}
     {!scene && localReasoningAvailable && <p>What are you trying to do? Let’s start with what’s here.</p>}
     {!scene && image && <div className="first-question"><label htmlFor="scene-goal">Your question <span className="context-note">Optional</span></label><input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading' || !localReasoningAvailable} onChange={event => setGoal(event.target.value)} placeholder={placeholder} /></div>}
     {!scene && <button aria-label={status === 'error' || status === 'cancelled' ? 'Retry scene' : 'Build shared scene'} onClick={() => void (async () => {

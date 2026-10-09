@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { chooseSceneMode } from './choose-scene-mode.js'
 import { readFile } from 'node:fs/promises'
 
 // Recorded Gemma HTTP replay for UI validation. Detection and OCR run for real.
@@ -90,7 +91,7 @@ export default async function validateStoryNavigation(page) {
       await tab.setViewportSize({ width, height: 900 })
       for (const mode of ['FIND', 'FIX', 'IMPROVE', 'EXPLORE', 'EXPLORE']) {
         report.activeCheck = { width, mode }
-        await tab.locator('.intent-choices button[data-mode=' + mode + ']').click()
+        await chooseSceneMode(tab, mode)
         await tab.waitForFunction(() => {
           const top = document.querySelector('.reasoning-drawer').getBoundingClientRect().top
           return top >= 0 && top < 90
@@ -112,7 +113,7 @@ export default async function validateStoryNavigation(page) {
     await tab.getByRole('button', { name: 'Ask scene', exact: true }).click()
     await tab.locator('.intent-result').waitFor()
     assert.deepEqual(report.requests.map(item => item.images), [1, 0])
-    await tab.getByRole('button', { name: 'Improve', exact: true }).click()
+    await chooseSceneMode(tab, 'IMPROVE')
     assert.equal(await tab.locator('.selected-intent').getAttribute('data-mode'), 'IMPROVE')
     assert.equal(await tab.locator('.intent-result .answer-mode').innerText(), 'Explore', 'Previous answer retains its mode')
     const form = await tab.locator('.shared-scene form').boundingBox()

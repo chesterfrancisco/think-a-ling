@@ -8,7 +8,13 @@ Built for the AppBuildersPH Local AI Hackathon 2026. MediaPipe detection and Eng
 
 **Public Analyze:** choose a photo → **Enable AI to analyze** → **Enable on-device AI** → wait for download and initialization → **Analyze photo**. Follow-ups reuse the saved scene without another image inference. See [actual browser-model results, compatibility and accuracy limits](docs/browser-ai-validation.md). The small model is experimental and can invent details; it is not equivalent to Gemma.
 
-**Ling Actions + Ling Steps:** contextual choices reflect the selected object, recognized text and its saved goal. Supported recommendations can become optional checklists with their original evidence and caveats. Ticks mean user-marked completion, never AI-verified physical changes. Checklists stay in memory for the current photo/session. No login or cloud storage. Ling Pockets is not implemented.
+**Ling Actions + Ling Steps:** contextual choices reflect the selected object, recognized text and its saved goal. Supported recommendations can become optional checklists with their original evidence and caveats. Ticks mean user-marked completion, never AI-verified physical changes. Checklists stay in memory for the current photo/session. Relevant modes appear first; the remaining modes stay available under Other ways to explore.
+
+**Ling Pockets:** choose **Save this** on recognized text, a scene summary or an answer; open **Saved** to revisit or delete it. Saves include original evidence and uncertainty, not the original photo. Storage is limited to this browser and website origin, with no automatic history, login or cloud backup. Clearing site data deletes it. Localhost and the public website have separate saved libraries.
+
+**Experimental local voice:** opt in to a browser-managed English speech pack, then dictate an editable question. The app requires on-device recognition and never falls back to remote speech. Control/lifecycle checks passed, but the real generated-audio transcription test failed (no-speech/timeout); physical-microphone transcription and Filipino support are not verified. Do not depend on voice for the live demonstration yet. Typing remains available.
+
+See the [current feature validation, hackathon criteria review and real-account implementation plan](docs/product-next-steps-and-criteria.md). Account creation and cross-device sync are planned, not implemented.
 
 See the [product refinement validation](docs/product-experience-validation.md) for actual checks and limitations. GitHub: [chesterfrancisco/think-a-ling](https://github.com/chesterfrancisco/think-a-ling).
 

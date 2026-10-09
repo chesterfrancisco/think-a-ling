@@ -13,7 +13,7 @@ import type { UploadedImage } from './services/image'
 import { ObjectDetectionService } from './services/objectDetection'
 import type { DetectedObject } from './services/objectDetection'
 import { OcrService } from './services/ocr'
-import { ArrowUpRight, ArrowDown, Camera, Compass, Eye, EyeOff, Focus, HelpCircle, ImageUp, Maximize, Search, ShieldCheck, Sparkles, Wrench, X, ScanText, ArrowRight, Undo2, MapPinPlus } from 'lucide-react'
+import { ArrowUpRight, ArrowDown, Camera, Eye, EyeOff, Focus, HelpCircle, ImageUp, Maximize, ShieldCheck, Sparkles, X, ScanText, ArrowRight, Undo2, MapPinPlus } from 'lucide-react'
 import { Brand } from './components/Brand'
 import { Mascot } from './components/Mascot'
 import { LingStory } from './components/LingStory'
@@ -26,6 +26,9 @@ import './Everyday.css'
 import './SimpleExperience.css'
 import { localReasoningAvailable as ollamaAvailable } from './services/ollama'
 import { stopBrowserAi, useBrowserAi } from './services/browserAi'
+import { LingPockets, SaveDiscovery } from './components/LingPockets'
+import { pocketFromScene } from './services/pockets'
+import { ModeChoices } from './components/ModeChoices'
 
 type Result<T> = { status: 'idle' | 'loading' | 'done' | 'error'; message: string; data: T }
 const emptyDetection: Result<DetectedObject[]> = { status: 'idle', message: '', data: [] }
@@ -60,6 +63,8 @@ function App() {
   const summaryNotice = !!sceneSnapshot && dismissedSummaryId !== sceneSnapshot.id
   const [viewMessage, setViewMessage] = useState('')
   const [cameraOpen, setCameraOpen] = useState(false)
+  const [cameraFill, setCameraFill] = useState(false)
+  const [cameraNative, setCameraNative] = useState(false)
   const [autoBuild, setAutoBuild] = useState(false)
   const fileInput = useRef<HTMLInputElement>(null)
   const viewfinder = useRef<HTMLElement>(null)
@@ -77,6 +82,14 @@ function App() {
   const busy = loadingImage || sceneBuilding || detection.status === 'loading' || ocr.status === 'loading'
   // Tesseract reports real progress for its recognition stage. Gemma does not.
   const ocrProgress = ocr.status === 'loading' ? /recognizing text \((\d+)%\)/i.exec(ocr.message)?.[1] : undefined
+
+  useEffect(() => {
+    const changed = () => setCameraNative(document.fullscreenElement === viewfinder.current)
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setCameraFill(false) }
+    document.addEventListener('fullscreenchange', changed)
+    window.addEventListener('keydown', escape)
+    return () => { document.removeEventListener('fullscreenchange', changed); window.removeEventListener('keydown', escape) }
+  }, [])
 
   useEffect(() => () => {
     stopBrowserAi()
@@ -99,6 +112,8 @@ function App() {
 
 
   async function selectImage(file: File, captured = false, object?: string) {
+    setCameraFill(false)
+    if (document.fullscreenElement === viewfinder.current) void document.exitFullscreen().catch(() => {})
     const run = ++revision.current
     if (detection.status === 'loading') { detector.current?.dispose(); detector.current = undefined }
     if (ocr.status === 'loading') { recognizer.current?.dispose(); recognizer.current = undefined }
@@ -211,6 +226,8 @@ function App() {
   }
 
   function goHome() {
+    setCameraFill(false)
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {})
     revision.current++
     if (detection.status === 'loading') { detector.current?.dispose(); detector.current = undefined }
     if (ocr.status === 'loading') { recognizer.current?.dispose(); recognizer.current = undefined }
@@ -239,6 +256,15 @@ function App() {
   }
 
   async function expand() {
+    if (cameraOpen) {
+      if (document.fullscreenElement) { await document.exitFullscreen(); return }
+      if (cameraFill) { setCameraFill(false); return }
+      try {
+        if (viewfinder.current?.requestFullscreen) await viewfinder.current.requestFullscreen()
+        else setCameraFill(true)
+      } catch { setCameraFill(true) }
+      return
+    }
     if (!image) return
     try {
       if (document.fullscreenElement) await document.exitFullscreen()
@@ -299,22 +325,24 @@ function App() {
       <button className="brand-button" aria-label="Think-a-ling home" onClick={goHome}><Brand /></button>
       <span className="header-tagline">A little help. A whole new perspective.</span>
       <div className="header-right">
+        <LingPockets />
         <button className="help-button" onClick={() => about.current?.showModal()} aria-label="About Think-a-ling"><HelpCircle size={21} /></button>
       </div>
     </header>
     <main>
       <div className="page-intro"><div><span className="eyebrow"><Sparkles size={16} /> YOUR WORLD. FULL OF POSSIBILITIES.</span>
         <h1>{image || cameraOpen ? <>Let’s find your <em>next step.</em></> : <>What can we<br /><em>figure out today?</em></>}</h1></div>
+        {!image && !cameraOpen && <div className="home-purpose"><span>POINT. UNDERSTAND. ACT.</span><p>Turn what’s around you into a useful next step.</p><small>Read a detail. Work toward a goal. Save a discovery.</small></div>}
       </div>
       {!ollamaAvailable && <div className="runtime-strip"><ShieldCheck size={16} /><span>Objects & text in your browser · optional on-device AI answers</span><button onClick={() => help.current?.showModal()}>How local AI works <ArrowUpRight size={14} /></button></div>}
-      <section ref={viewfinder} data-detection-status={detection.status} data-ocr-status={ocr.status} className={'viewfinder' + (image ? ' has-image' : '') + (cameraOpen ? ' has-camera' : '') + (panelOpen || selectedIndex !== undefined ? ' has-drawer' : '') + (selectedIndex !== undefined ? ' has-object-card' : '') + (sceneBuilding || detection.status === 'loading' ? ' is-scanning' : '')} aria-label="Your visual workspace">
+      <section ref={viewfinder} data-detection-status={detection.status} data-ocr-status={ocr.status} className={'viewfinder' + (image ? ' has-image' : '') + (cameraOpen ? ' has-camera' : '') + (cameraOpen && cameraFill ? ' camera-fill' : '') + (panelOpen || selectedIndex !== undefined ? ' has-drawer' : '') + (selectedIndex !== undefined ? ' has-object-card' : '') + (sceneBuilding || detection.status === 'loading' ? ' is-scanning' : '')} aria-label="Your visual workspace">
         {(image || cameraOpen) && <div className="camera-top">
           <button className="back-to-start" onClick={goHome} aria-label="Back to start"><Undo2 size={18} /><span>Back</span></button>
           <div className="camera-tools">
             <button disabled={busy} onClick={startCamera} aria-label="Use camera"><Camera size={18} /></button>
             <button disabled={loadingImage} onClick={() => fileInput.current?.click()} aria-label="Upload a photo" title="Change photo"><ImageUp size={18} /></button>
             <button onClick={() => { setMarkersVisible(value => !value); setSelectedIndex(undefined) }} aria-label={markersVisible ? 'Hide object markers' : 'Show object markers'} aria-pressed={markersVisible} title={markersVisible ? 'Hide object markers' : 'Show object markers'}>{markersVisible ? <Eye size={18} /> : <EyeOff size={18} />}</button>
-            <button disabled={!image} onClick={() => void expand()} aria-label="Expand image" title="Fullscreen photo"><Maximize size={18} /></button>
+            <button disabled={!image && !cameraOpen} onClick={() => void expand()} aria-label={cameraOpen ? cameraFill || cameraNative ? 'Exit fullscreen camera' : 'Expand camera' : 'Expand image'} title={cameraOpen ? 'Fullscreen camera' : 'Fullscreen photo'}><Maximize size={18} /></button>
             <button onClick={() => help.current?.showModal()} aria-label="Help"><HelpCircle size={18} /></button>
           </div>
         </div>}
@@ -324,7 +352,7 @@ function App() {
           {image ? <ImagePreview image={image} detections={detection.data} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
             manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <div className="welcome">
             <div className="welcome-copy"><span className="welcome-number">01 / START WITH A PHOTO</span>
-            <h2>Start with<br />what’s here<span>.</span></h2>
+            <h2>Start with <br />what’s here<span>.</span></h2>
             <p>Point your camera or choose a photo.<br />Start with the objects and words in front of you.</p>
             <div className="start-actions"><button className="primary" aria-label="Use camera" disabled={busy} onClick={startCamera}><Camera size={22} /> Open camera <ArrowUpRight size={20} /></button>
             <button className="upload-btn" aria-label="Upload a photo" disabled={busy} onClick={() => fileInput.current?.click()}><ImageUp size={20} /> Choose a photo</button></div>
@@ -355,7 +383,7 @@ function App() {
         </div>}
       {sceneSnapshot && <section ref={summary} tabIndex={-1} className="scene-summary" aria-label="Photo summary">
         <Mascot /><div><span className="sheet-kicker">HERE'S THE PICTURE</span><p className="answer-ready">100% · Analysis complete</p><p className="scene-description">{sceneSnapshot.description}</p><small>AI interpretation. Check important details against your photo.</small>{corrections.length > 0 && <p className="correction-note">Your label changes apply to new questions. This description was written from the original photo.</p>}
-        {!!sceneSnapshot.uncertainty.length && <details><summary>What is unclear?</summary>{sceneSnapshot.uncertainty.map((note, index) => <p key={index}>{note}</p>)}</details>}</div>
+        {!!sceneSnapshot.uncertainty.length && <details><summary>What is unclear?</summary>{sceneSnapshot.uncertainty.map((note, index) => <p key={index}>{note}</p>)}</details>}<SaveDiscovery draft={pocketFromScene(sceneSnapshot)} /></div>
       </section>}
         {selectedIndex !== undefined && detection.data[selectedIndex] && <ObjectCard key={discoveryKey(detection.data[selectedIndex])} detection={detection.data[selectedIndex]} index={selectedIndex}
           displayName={objectDisplayName(detection.data[selectedIndex], detection.data, corrections)}
@@ -372,6 +400,7 @@ function App() {
             detection.data.map((item, index) => discoveryKey(item) === goalRequest.objectKey ?
               <button key={index} className="discovery-return" onClick={() => selectObject(item, index)}>View {objectDisplayName(item, detection.data, corrections)} discovery <ArrowUpRight size={15} /></button> : null)}
           <ReasoningPanel key={image?.url ?? 'no-image'} image={image} mode={mode} goalRequest={goalRequest} autoBuild={autoBuild} corrections={corrections}
+            onVoiceMode={setMode} visible={panelOpen}
             objectFocus={objectFocus} objectLabel={objectFocus ? objectDisplayName(objectFocus, detection.data, corrections) : undefined}
             onSceneChange={setSceneSnapshot}
             onTurnComplete={(turn, key) => {
@@ -385,9 +414,7 @@ function App() {
         </aside>
         <span className="viewfinder-corner corner-tl" /><span className="viewfinder-corner corner-br" />
       </section>
-      {sceneSnapshot && <nav className="intent-choices" aria-label="Scene experience">
-        {([{ name: 'EXPLORE', label: 'Explore', hint: 'Understand it. Discover a use.', icon: Compass }, { name: 'FIND', label: 'Find', hint: 'What here could help with your goal?', icon: Search }, { name: 'FIX', label: 'Fix', hint: 'Find what to check first.', icon: Wrench }, { name: 'IMPROVE', label: 'Improve', hint: 'Make more of what you already have.', icon: Sparkles }] as const).map(({ name, label, hint, icon: Icon }) => <button key={name} data-mode={name} aria-label={label} aria-pressed={mode === name} aria-controls="ask-panel" className={mode === name ? 'selected' : ''} onClick={() => { setMode(name); setObjectFocus(undefined); setGoalRequest(undefined); openQuestion() }}><Icon size={20} /><span><strong>{label}</strong><small>{hint}</small></span></button>)}
-      </nav>}
+      {sceneSnapshot && <ModeChoices scene={sceneSnapshot} mode={mode} goal={goalRequest?.text} onSelect={name => { setMode(name); setObjectFocus(undefined); setGoalRequest(undefined); openQuestion() }} />}
       {image && <button className="floating-ask" aria-label={panelOpen ? 'Close chat' : 'Ask This Space'} aria-expanded={panelOpen} aria-controls="ask-panel" onClick={() => { if (panelOpen) setPanelOpen(false); else openQuestion() }}><Mascot thinking={sceneBuilding} /><span>{panelOpen ? 'Close chat' : 'Ask This Space'}</span>{panelOpen ? <X size={19} /> : <ArrowUpRight size={19} />}</button>}
       {summaryNotice && sceneSnapshot && <div className="summary-ready-notice" role="status"><button onClick={() => { setDismissedSummaryId(sceneSnapshot.id); summary.current?.focus({ preventScroll: true }); summary.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }) }}><ArrowDown size={20} /><span><strong>HERE'S THE PICTURE</strong><small>Your photo summary is ready. View below.</small></span></button><button aria-label="Dismiss summary notice" onClick={() => setDismissedSummaryId(sceneSnapshot.id)}><X size={17} /></button></div>}
       <footer><span>Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026</span></footer>
@@ -403,6 +430,7 @@ function App() {
       {ocr.status === 'loading' && <p role="status">Reading the text...</p>}
       {ocr.status === 'error' && <p role="alert" className="error">{ocr.message}</p>}
       {ocr.status === 'done' && (ocr.data ? <textarea id="recognized-text" aria-label="Recognized text" readOnly value={ocr.data} rows={8} /> : <p>No readable text found. Try a closer, sharper photo.</p>)}
+      {ocr.status === 'done' && ocr.data.trim() && <SaveDiscovery draft={{ title: 'Text from ' + (image?.name ?? 'photo').slice(0, 150), kind: 'text', content: ocr.data, source: 'Tesseract · recognized text', photoName: image?.name ?? '', evidence: [], caveats: ['OCR can misread text. Check against the original. The photo is not saved.'] }} />}
       {ocr.status === 'idle' && <p>Choose a photo to read its text.</p>}
       <button disabled={!image || busy} onClick={() => void recognize()}>Read again</button>
       {ocr.data.trim() && <button disabled={!localReasoningAvailable} onClick={() => { textDialog.current?.close(); openQuestion('Explain the text in this photo.') }}>Explain this text</button>}
@@ -428,7 +456,9 @@ function App() {
       <p>Missed someone or something? Select Add missing tag, tap its location, and enter a name. Lilac pins are added by you, not predicted by AI. Tap a pin to rename or remove it. Tags stay with the current photo only and aren’t used as AI evidence or for training. To rename a green marker, open its object card and select Correct this label.</p>
       <p>Green boxes and confidence scores come from MediaPipe. Text comes from Tesseract. Gemma descriptions have no measured locations. Check the evidence and uncertainty beside every response.</p>
       <p>Detection and OCR run in your browser. On the public site, open Ask This Space and select Enable on-device AI to download approximately 374 MB of model files from this site. Experimental SmolVLM answers then run on your device using WebGPU. It can miss or invent details. Follow-up questions reuse the saved description and recognized text. Structured action checklists and grounded study cards remain in the local app with Gemma through Ollama. Neither mode is a safety or medical assessment.</p>
-      <p>Use live camera for periodic on-device detection. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. Enable the optional browser model for a short interpretation. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device. Voice input is not included.</p>
+      <p>Use live camera for periodic on-device detection. Expand camera opens fullscreen while keeping the controls and measured boxes. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device.</p>
+      <p>Experimental local voice requires a compatible browser, its English language pack and microphone permission. Enable local voice, install the pack if offered, then speak. Review the transcript and selected mode before sending. No cloud speech fallback is used. Language-pack downloads are managed by your browser and require internet. Filipino support was unavailable in the tested browser.</p>
+      <p>Save this keeps text and supporting evidence in this browser only. Open Saved to revisit or delete it. Nothing is saved automatically, and the original photo is not stored. There is no login or cloud sync. Clearing site data removes these notes; anyone using the same browser profile can access them.</p>
       <p>Internet is needed to load this website and its model files. Once detection and text reading have initialized, you can keep using them without internet while this page stays open. Offline reload or installation is not supported. The optional browser model is cached after you enable it; you can remove its saved cache in the AI panel. Browsers may clear cached files. Your photos are processed on your device and are not uploaded; the hosting provider receives normal page and asset requests.</p>
       <button className="primary" onClick={() => help.current?.close()}>Let’s explore <ArrowUpRight size={18} /></button>
     </dialog>

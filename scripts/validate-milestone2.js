@@ -1,4 +1,5 @@
 import { dismissStory } from './dismiss-story.js'
+import { chooseSceneMode } from './choose-scene-mode.js'
 import { observeReasoning } from './observe-reasoning.js'
 export default async function validateMilestone2(page) {
   const context = await page.context().browser().newContext({ serviceWorkers: 'block' })
@@ -40,7 +41,7 @@ export default async function validateMilestone2(page) {
       ['FIX', 'Are any problems actually visible, and what should I check?'],
       ['IMPROVE', 'Use the earlier ideas to help me make better use of this desk for focused study.'],
     ]) {
-      await tab.locator('.intent-choices button[data-mode=' + mode + ']').click()
+      await chooseSceneMode(tab, mode)
       await tab.locator('#scene-goal').fill(goal)
       const start = Date.now()
       const intentResponse = capture.next()

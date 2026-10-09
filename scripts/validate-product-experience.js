@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { dismissStory } from './dismiss-story.js'
+import { chooseSceneMode } from './choose-scene-mode.js'
 
 // Recorded real Gemma results exercise UI behavior only; not a new accuracy test.
 // All browser detection/OCR execute normally. No replay is imported by the app.
@@ -33,11 +34,18 @@ export default async function validateProductExperience(page) {
     await ready()
     await tab.getByRole('button', { name: 'Explore this photo', exact: true }).click()
     await tab.locator('.scene-summary').waitFor()
-    for (const name of ['Explore', 'Find', 'Fix', 'Improve']) assert.equal(await tab.getByRole('button', { name, exact: true }).count(), 1)
-    await tab.getByRole('button', { name: 'Improve', exact: true }).click()
+    for (const name of ['Explore', 'Find', 'Fix', 'Improve']) assert.equal(await tab.getByRole('button', { name, exact: true, includeHidden: true }).count(), 1)
+    await chooseSceneMode(tab, 'IMPROVE')
     await tab.locator('#scene-goal').fill('Make this desk useful for study.')
     await tab.getByRole('button', { name: 'Ask scene' }).click()
     await latest().waitFor()
+    assert.equal(await tab.evaluate(() => localStorage.getItem('think-a-ling.pockets.v1')), null, 'No automatic saved history')
+    await latest().getByRole('button', { name: 'Save this', exact: true }).click()
+    await tab.locator('.scene-summary').getByRole('button', { name: 'Save this', exact: true }).click()
+    const saved = await tab.evaluate(() => JSON.parse(localStorage.getItem('think-a-ling.pockets.v1')))
+    assert.equal(saved.length, 2)
+    assert.ok(saved.some(item => item.kind === 'answer' && item.content.includes('Arrange your books and papers neatly')))
+    assert.ok(saved.every(item => !Object.hasOwn(item, 'image') && Array.isArray(item.evidence) && Array.isArray(item.caveats)))
     assert.equal(await latest().getByRole('checkbox').count(), 0, 'Steps must be optional')
     await latest().getByRole('button', { name: 'Turn into steps', exact: true }).click()
     const box = latest().getByRole('checkbox', { name: 'Organize Study Materials', exact: true })
@@ -64,7 +72,7 @@ export default async function validateProductExperience(page) {
     assert.deepEqual(report.requests.map(item => item.images), [1, 0], 'Opening/ticking steps must not request inference')
     report.checks.push('Rebrand and four mode names; optional steps retain verbatim recommendations, caveats and evidence; manual checkboxes work at 1280/390/320px with no new inference')
     responseMode = 'FIX'
-    await tab.getByRole('button', { name: 'Fix', exact: true }).click()
+    await chooseSceneMode(tab, 'FIX')
     await tab.locator('#scene-goal').fill('What should I check first?')
     await tab.getByRole('button', { name: 'Ask scene' }).click()
     await tab.waitForFunction(() => document.querySelector('.shared-scene > .intent-result')?.dataset.mode === 'FIX')

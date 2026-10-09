@@ -12,6 +12,8 @@ Updated and tested on 2026-10-09, including opt-in browser reasoning. The produc
 | Short interpretations and follow-up answers | Optional experimental SmolVLM: explicit enable/download, compatible WebGPU device required | Existing Gemma workflow remains the default |
 | Gemma scene descriptions, object questions, Explore/Find/Fix/Improve reasoning, text explanation and study prompts | Unavailable; related actions disabled with a local-app explanation | Local Ollama `gemma3:4b` via the guarded Vite proxy |
 | Continued detection/OCR without networking | Verified after both engines initialize, while the page remains open | Same browser behavior |
+| Ling Pockets saved discoveries | Explicit browser-only text/evidence saves, revisit and delete | Same, in a separate localhost library |
+| Experimental English voice input | Requires browser on-device speech support and explicit permission; real transcription remains unverified | Same; no cloud speech fallback |
 | Offline page reload or installed PWA | Not supported | Not supported |
 
 The public site cannot access the developer's localhost Ollama. Installing Ollama alone does not enable reasoning on this website: the visitor would also need to run the local development application. No tunnel, cloud inference, serverless AI function, account system or alternative backend has been introduced.
@@ -30,7 +32,7 @@ The public site cannot access the developer's localhost Ollama. Installing Ollam
 
 The app uses React state within `/`, with no URL-based application routes. No catch-all rewrite is needed. Missing model/WASM paths must remain errors rather than returning the HTML application. There is no `/local-ollama` production route.
 
-Configured response headers restrict connections to the same origin, disable form submissions and framing, prevent MIME sniffing, and restrict camera permission to the same origin while disabling microphone/geolocation. The existing HTML connection policy is retained. No cross-origin isolation requirement was added.
+Configured response headers restrict connections to the same origin, disable form submissions and framing, prevent MIME sniffing, and restrict camera, microphone and on-device speech recognition to the same origin while disabling geolocation. Microphone access is requested only by an explicit voice action. Browser-managed speech packs may require an internet download; the app rejects remote recognition. The existing HTML connection policy is retained. No cross-origin isolation requirement was added.
 
 These settings follow Vercel's [Vite deployment guide](https://vercel.com/docs/frameworks/frontend/vite), [configuration reference](https://vercel.com/docs/project-configuration/vercel-json) and [supported Node versions](https://vercel.com/docs/functions/runtimes/node-js/node-js-versions).
 
@@ -72,7 +74,7 @@ Select your intended Vercel account/team, link the existing project or create `t
 
 `.vercelignore` allows only app source, public assets, TypeScript/build configuration, package files and the build-time asset checker. Test images, camera recordings, reports, local credentials and documentation are excluded from the CLI upload. `.vercel/` is gitignored. See [Vercel's exclusion-file documentation](https://vercel.com/docs/deployments/vercel-ignore).
 
-Alternatively, import a Git repository in Vercel and use the same settings. This workspace contains uncommitted changes and new AI assets: a Git deployment will only include files actually committed and pushed. `.vercelignore` is not a substitute for reviewing what is in a Git repository.
+Alternatively, import the Git repository in Vercel and use the same settings. A Git deployment only includes committed and pushed files. `.vercelignore` is not a substitute for reviewing what is in the repository.
 
 ## Check the resulting HTTPS URL
 
@@ -92,18 +94,20 @@ For a public submission, check the project's deployment protection settings so i
 | --- | --- |
 | Production build | Passed; source/output integrity checks for detection/OCR and optional browser model/runtime assets |
 | Lint | Passed |
-| Unit tests | 44 passed, 0 failed |
+| Unit tests | 48 passed, 0 failed |
 | Production smoke with configured response headers | Passed on Chrome 153.0.8010.55 |
 | Detection | Actual four detections: Dog 1, Cat 1, Dog 2, Cat 2; real boxes/hotspots at 1280/390/320px |
 | OCR | Actual recognition included `Read this text without internet.` and `Invoice 12345 Total 250.00` |
-| Camera | Real browser getUserMedia API with a file-backed camera; live detection, capture/review, retake, confirmation and track cleanup passed |
+| Camera | Real browser getUserMedia API with a file-backed camera; fullscreen live detection and aligned boxes, fullscreen capture review, exit, retake, confirmation and track cleanup passed |
+| Saved discoveries and layout | Actual OCR save, reload/revisit without reanalysis, deduplication and deletion passed; desktop and 390/320px layout checks passed |
+| Voice | Simulated speech-event lifecycle checks passed. Real generated-audio recognition did not pass; physical-microphone use remains unverified and the feature is explicitly experimental |
 | Public reasoning | Opt-in real SmolVLM image answer and text-only follow-up passed; unsupported-device, download failure, retry/cancel and cache removal checks passed |
 | Network/privacy | Zero external requests, image/API POSTs or page errors during smoke interactions |
 | Offline inference | New images processed after initialization with all browser networking disabled |
 | Existing Milestone 1 production regressions | Passed, including missing-asset failures/retry, blank/corrupt uploads, disposal/reinitialization and offline inference |
 | Local development proxy guard | Passed all eight rejection checks; preview endpoint returned 404; no generation requested |
 
-The latest smoke's cold detection-plus-OCR measurement was 574 ms on this laptop over loopback, after local asset checks. This is not an internet download or mobile-device benchmark. Detection/OCR assets total 72.8 MiB, including compatibility variants. Optional browser reasoning adds approximately 374 MB, fetched after explicit consent; first image analysis took 38.84 seconds in the production browser test. See the separate validation report for quality failures and scope limits.
+The current detection/OCR smoke completed in under one second on this laptop over loopback; exact run timings are in the local JSON report. This is not an internet download or mobile-device benchmark. Detection/OCR assets total 72.8 MiB, including compatibility variants. Optional browser reasoning adds approximately 374 MB, fetched after explicit consent; first image analysis took 38.84 seconds in the earlier production browser test. See the separate validation report for quality failures and scope limits.
 
 Machine-readable evidence and screenshots are in `test-results/production-smoke.json`, `production-object-mobile.png`, `production-ocr.png`, `validate-milestone1.json` and `security-audit.json`. They are local artifacts, excluded from deployment.
 

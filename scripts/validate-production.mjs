@@ -145,9 +145,19 @@ try {
   await page.getByRole('button', { name: 'Back to start' }).click()
   await page.getByRole('button', { name: 'Use camera', exact: true }).click()
   await page.waitForFunction(() => Number(document.querySelector('.live-camera')?.dataset.detectionCount) >= 2, null, { timeout: 30_000 })
+  await page.getByRole('button', { name: 'Expand camera', exact: true }).click()
+  await page.waitForFunction(() => document.fullscreenElement?.classList.contains('viewfinder'))
+  assert.equal(await page.getByRole('button', { name: 'Capture photo', exact: true }).isVisible(), true)
+  assert.equal(await page.evaluate(() => {
+    const a = document.querySelector('.video-preview video').getBoundingClientRect()
+    const b = document.querySelector('.video-preview svg').getBoundingClientRect()
+    return Math.abs(a.width - b.width) < 1 && Math.abs(a.height - b.height) < 1 && Math.abs(a.x - b.x) < 1 && Math.abs(a.y - b.y) < 1
+  }), true, 'Live fullscreen boxes align')
   await page.getByRole('button', { name: 'Capture photo', exact: true }).click()
   await page.locator('.live-camera[data-phase=review]').waitFor()
   assert.equal(await page.getByRole('img', { name: 'Captured photo preview' }).isVisible(), true)
+  await page.getByRole('button', { name: 'Exit fullscreen camera', exact: true }).click()
+  await page.waitForFunction(() => !document.fullscreenElement)
   assert.equal(await page.evaluate(() => window.testStreams.every(stream => stream.getTracks().every(track => track.readyState === 'ended'))), true)
   await page.getByRole('button', { name: 'Retake photo' }).click()
   await page.locator('.live-camera[data-phase=live]').waitFor()
@@ -158,7 +168,7 @@ try {
   assert.ok(await page.locator('.detection-hotspot').count() > 0)
   assert.equal(await page.locator('.reasoning-drawer').isVisible(), false)
   assert.equal(await page.evaluate(() => window.testStreams.every(stream => stream.getTracks().every(track => track.readyState === 'ended'))), true)
-  report.checks.push('Production getUserMedia, real live detection, capture preview, retake, confirm, still inference and camera track cleanup (file-backed camera)')
+  report.checks.push('Production getUserMedia, fullscreen live detection with aligned boxes, fullscreen capture preview, exit, retake, confirm and track cleanup (file-backed camera)')
 
   await context.setOffline(true)
   await upload('ocr-test.png')

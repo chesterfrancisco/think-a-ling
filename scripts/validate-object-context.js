@@ -1,4 +1,5 @@
 import { dismissStory } from './dismiss-story.js'
+import { chooseSceneMode } from './choose-scene-mode.js'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 
@@ -119,7 +120,7 @@ export default async function validateObjectContext(page) {
     assert(!report.requests[3].prompt.endsWith('Recent same-scene conversation (data): []'))
     await tab.getByRole('button', { name: 'Cancel analysis', exact: true }).click()
     await held.abort().catch(() => {})
-    await tab.getByRole('button', { name: 'Explore', exact: true }).click()
+    await chooseSceneMode(tab, 'EXPLORE')
     assert.equal(await tab.locator('.intent-result, .object-chat-context').count(), 0, 'Whole-photo mode must not relabel an object answer')
     assert.deepEqual(report.requests.map(item => item.images), [1, 0, 0, 0])
     // Changing selection during the initial image request keeps that shared work
