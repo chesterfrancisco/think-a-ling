@@ -43,7 +43,7 @@ export default async function validateAuditUi(page) {
       assert.equal(await tab.locator('.object-chat-context strong').textContent(), `Person ${number}`)
       assert.equal(await tab.locator('#scene-goal').inputValue(), '')
       assert.equal(await tab.locator('#scene-goal').getAttribute('placeholder'), `Ask about Person ${number} in this photo…`)
-      await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+      await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     }
     report.checks.push('Real detector on a two-copy portrait input: Person 1/Person 2 agree across hotspot, card and chat; empty question values, placeholder only; no inference requested')
     assert.equal(report.requests.length, 0)
@@ -95,7 +95,7 @@ export default async function validateAuditUi(page) {
     await tab.screenshot({ path: 'test-results/estimated-progress-audit.png', fullPage: true, animations: 'disabled' })
     await fulfill(projection)
     await tab.locator('.scene-summary').waitFor()
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').first().click()
     sent = tab.waitForRequest('**/local-ollama/api/chat')
     await tab.getByRole('button', { name: 'Learn', exact: true }).click()
@@ -114,14 +114,14 @@ export default async function validateAuditUi(page) {
     assert.equal(await tab.getByRole('progressbar').count(), 0)
     // A newly selected contextual action is a new request, even after a
     // cancellation on this same measured object; it must not stay stuck.
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').first().click()
     sent = tab.waitForRequest('**/local-ollama/api/chat')
     await tab.getByRole('button', { name: 'Use', exact: true }).click()
     await sent
     await tab.getByRole('button', { name: 'Cancel analysis', exact: true }).click()
     await held.abort().catch(() => {})
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').first().click()
     sent = tab.waitForRequest('**/local-ollama/api/chat')
     await tab.getByRole('button', { name: 'Learn', exact: true }).click()

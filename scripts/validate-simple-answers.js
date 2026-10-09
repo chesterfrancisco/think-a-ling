@@ -32,9 +32,8 @@ export default async function validateSimpleAnswers(page) {
   })
   try {
     await tab.goto('http://127.0.0.1:4173'); await dismissStory(tab)
-    await tab.locator('.demo-guide summary').click()
     assert.equal(await tab.locator('.demo-guide ol, .demo-guide p').count(), 0)
-    await tab.getByRole('button', { name: 'Try example study notes', exact: true }).click(); await ready()
+    await tab.getByRole('button', { name: 'Summarize this document', exact: true }).click(); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)

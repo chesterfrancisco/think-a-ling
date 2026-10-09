@@ -1,6 +1,6 @@
 # Offline experience, accessibility and risk review
 
-**Current free-app workflow:** choose or capture a photo, inspect objects or text, ask an optional on-device question, and explicitly save useful text in this browser. No login, registration or cloud sync is part of this workflow. Accessibility, language and optional offline preparation live in navbar **Settings**. The sample button stays under **First time? Try a study task.** Users can correct or remove mistaken tags and undo removals; removed tags cannot supply detection evidence to new questions.
+**Current free-app workflow:** choose or capture a photo, inspect objects or text, ask an optional on-device question, and explicitly save useful text in this browser. No login, registration or cloud sync is part of this workflow. Accessibility, language and optional offline preparation live in navbar **Settings**. **Need inspiration?** offers five sample pictures with editable questions. Users can correct or remove mistaken tags and undo removals; removed tags cannot supply detection evidence to new questions.
 
 Updated 2026-10-10. This is the current status; earlier milestone reports describe earlier builds.
 
@@ -32,10 +32,10 @@ Photo or camera → real detections/text → inspect, correct or retry → usefu
 
 Target user: **a student revisiting short printed English notes with unreliable connectivity**. Product category: **Personal assistants / Productivity**, demonstrated through an **Education** task. Computer vision is the enabling technology; privacy is a benefit. Accessibility is a design consideration, not a claim that this is a validated assistive-navigation product.
 
-While online, build/deploy and choose **Settings → Offline downloads → Prepare for offline**. Wait for ready (about 75 MiB, app/detection/OCR/fonts/example). Optional SmolVLM needs another approximately 374 MB and compatible WebGPU hardware. Prepare and verify both before the demo if you plan to use model reasoning. Keep a typed-input route available; do not depend on experimental speech.
+While online, build/deploy and choose **Settings → Offline downloads → Prepare for offline**. Wait for ready (about 84 MiB, app/detection/OCR/fonts/five examples). Optional SmolVLM needs another approximately 374 MB and compatible WebGPU hardware. Prepare and verify both before the demo if you plan to use model reasoning. Keep a typed-input route available; do not depend on experimental speech.
 
 1. Turn browser networking off and reload the page.
-2. Choose **First time? Try a study task. → Try example study notes**, or upload your short English notes. This runs real OCR; it does not replay a prepared answer.
+2. Choose **Need inspiration? → Summarize this document**, or upload your short English notes. This runs real OCR; it does not replay a prepared answer.
 3. Choose **Read text**; search `Photosynthesis`. Compare the returned line to the image.
 4. Choose **Practice recall from these lines**; reveal the exact recognized text. These are verbatim recall cues, explicitly not generated explanations or fact verification.
 5. Save the useful practice, reload and revisit **Saved** without reanalyzing. Show the preserved uncertainty. Saved discoveries stay on this device.

@@ -16,8 +16,10 @@ const assets = await Promise.all(paths.map(async path => {
   const decoded = path.endsWith('.gz') ? gunzipSync(raw) : undefined
   return { url: '/' + path, bytes: (await stat(resolve(root, path))).size, sha256: createHash('sha256').update(raw).digest('hex'), ...(decoded ? { decodedBytes: decoded.length, decodedSha256: createHash('sha256').update(decoded).digest('hex') } : {}) }
 }))
-const sample = await readFile(resolve(root, 'demo/study-notes.png'))
-assets.push({ url: '/demo/study-notes.png', bytes: sample.length, sha256: createHash('sha256').update(sample).digest('hex') })
+for (const file of ['plant.png', 'landmark.png', 'study-notes.png', 'food.png', 'animal.png']) {
+  const sample = await readFile(resolve(root, 'demo', file))
+  assets.push({ url: '/demo/' + file, bytes: sample.length, sha256: createHash('sha256').update(sample).digest('hex') })
+}
 const version = createHash('sha256').update(JSON.stringify(assets)).digest('hex').slice(0, 16)
 const template = await readFile('scripts/service-worker.template.js', 'utf8')
 await writeFile(resolve(root, 'sw.js'), `const BUILD = ${JSON.stringify({ version, assets, brain: brain.assets.map(a => '/ai/' + a.file) })};\n` + template)

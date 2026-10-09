@@ -8,10 +8,19 @@ type Props = {
   onCamera: () => void
   onChoose: () => void
   onFile: (file: File) => Promise<void>
+  onExample: (file: File, question: string) => Promise<void>
   onError: (message: string) => void
 }
 
-export function HomeDashboard({ busy, onCamera, onChoose, onFile, onError }: Props) {
+const examples = [
+  { file: 'plant.png', question: 'What plant is this?' },
+  { file: 'landmark.png', question: 'Tell me about this landmark' },
+  { file: 'study-notes.png', question: 'Summarize this document' },
+  { file: 'food.png', question: 'What’s in this food?' },
+  { file: 'animal.png', question: 'Identify this animal' },
+]
+
+export function HomeDashboard({ busy, onCamera, onChoose, onFile, onExample, onError }: Props) {
   const [dragging, setDragging] = useState(false)
   const [exampleLoading, setExampleLoading] = useState(false)
   const download = useRef<AbortController | undefined>(undefined)
@@ -26,17 +35,17 @@ export function HomeDashboard({ busy, onCamera, onChoose, onFile, onError }: Pro
     void onFile(event.dataTransfer.files[0])
   }
 
-  async function example() {
+  async function example(sample: typeof examples[number]) {
     if (disabled) return
     const controller = new AbortController()
     download.current = controller
     setExampleLoading(true)
     onError('')
     try {
-      const response = await fetch('/demo/study-notes.png', { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
+      const response = await fetch('/demo/' + sample.file, { signal: AbortSignal.any([controller.signal, AbortSignal.timeout(15000)]) })
       if (!response.ok) throw new Error('The example is unavailable. Choose your own photo or try again.')
       const blob = await response.blob()
-      if (!controller.signal.aborted) await onFile(new File([blob], 'example-study-notes.png', { type: 'image/png' }))
+      if (!controller.signal.aborted) await onExample(new File([blob], 'example-' + sample.file, { type: 'image/png' }), sample.question)
     } catch (error) {
       if (!controller.signal.aborted) onError(error instanceof Error ? error.message : 'The example could not be opened. Try again.')
     } finally {
@@ -77,10 +86,13 @@ export function HomeDashboard({ busy, onCamera, onChoose, onFile, onError }: Pro
 
     <div className="dashboard-bottom">
       <span className="welcome-note"><ShieldCheck size={17} aria-hidden="true" /> No account needed. Photos stay on your device.</span>
-      <details className="demo-guide"><summary><Sparkles size={16} aria-hidden="true" /> First time? Try a study task.</summary>
-        <button disabled={disabled} onClick={() => void example()}><img src="/demo/study-notes.png" alt="" width="64" height="48" /><span>Try example study notes</span><ArrowUpRight size={17} aria-hidden="true" /></button>
-      </details>
-      {exampleLoading && <span role="status" className="example-status">Opening study notes…</span>}
+      <section className="inspiration" aria-labelledby="inspiration-title" aria-busy={exampleLoading}>
+        <div className="inspiration-heading"><h2 id="inspiration-title"><Sparkles size={18} aria-hidden="true" /> Need inspiration?</h2><span>Try these <ArrowUpRight size={15} aria-hidden="true" /></span></div>
+        <div className="inspiration-grid">{examples.map(sample => <button key={sample.file} disabled={disabled} onClick={() => void example(sample)}>
+          <img src={'/demo/' + sample.file} alt="" width="64" height="64" loading="lazy" /><span>{sample.question}</span>
+        </button>)}</div>
+      </section>
+      {exampleLoading && <span role="status" className="example-status">Opening example…</span>}
     </div>
   </div>
 }

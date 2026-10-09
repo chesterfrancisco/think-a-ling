@@ -80,7 +80,7 @@ export default async function validateObjectContext(page) {
     await tab.getByRole('button', { name: /HERE'S THE PICTURE/ }).click()
     await tab.waitForFunction(() => { const rect = document.querySelector('.scene-summary').getBoundingClientRect(); return rect.top >= 0 && rect.top < innerHeight - 120 && rect.bottom <= innerHeight + 1 })
     assert.equal(await tab.locator('.summary-ready-notice').count(), 0)
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').nth(2).click() // Same name, different measured box.
     assert.equal(await tab.locator('.discovery-answer').count(), 0)
     await tab.getByRole('button', { name: 'Ask', exact: true }).click()
@@ -107,7 +107,7 @@ export default async function validateObjectContext(page) {
     assert.equal(await tab.locator('.intent-result').count(), 0, 'A different category must not receive a stale or late answer')
     assert((await tab.locator('.object-chat-context').innerText()).includes('Cat 1'))
     await tab.screenshot({ path: 'test-results/selected-object-clean-chat.png', fullPage: true, animations: 'disabled' })
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').nth(0).click()
     await tab.getByRole('button', { name: 'Ask', exact: true }).click()
     assert((await tab.locator('.shared-scene > .intent-result').innerText()).includes(fixture.turn.response.answer))

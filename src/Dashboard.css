@@ -44,12 +44,16 @@ body:has(.everyday-app.is-home) { background: radial-gradient(ellipse at 98% 88%
 .dashboard-bottom { grid-column: 1 / -1; text-align: center; display: flex; flex-direction: column; align-items: center; margin-top: 0; gap: 8px; }
 .everyday-app .dashboard-home .welcome-note { margin: 0; font-size: 12px; justify-content: center; color: #655975; }
 .dashboard-bottom .welcome-note svg { flex-shrink: 0; color: #8066a4; }
-.dashboard-bottom .demo-guide { margin: 5px 0 0; }
-.dashboard-bottom .demo-guide summary { font-size: 13px; padding: 8px 12px; border-radius: 12px; }
-.dashboard-bottom .demo-guide summary svg { display: inline-block; vertical-align: -3px; color: #7650c3; margin-right: 4px; }
-.dashboard-bottom .demo-guide summary:hover { background: #eee7f8; }
-.dashboard-bottom .demo-guide button { display: flex; align-items: center; justify-content: center; gap: 16px; background: #fff; border: 1px solid #e1d5f1; border-radius: 18px; padding: 10px 15px; font-size: 13px; width: 100%; margin: 5px 0 10px; text-align: left; }
-.dashboard-bottom .demo-guide img { border-radius: 8px; border: 1px solid #ebe7ee; object-fit: cover; }
+.inspiration { width: 100%; margin-top: 23px; }
+.inspiration-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 14px; }
+.everyday-app .welcome .inspiration-heading h2 { display: flex; align-items: center; gap: 9px; margin: 0; font-size: 15px; line-height: 1.5; letter-spacing: 0; }
+.inspiration-heading h2 svg { color: #7950ce; }
+.inspiration-heading > span { display: flex; align-items: center; gap: 9px; font-size: 12px; color: #6b607c; }
+.inspiration-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 13px; }
+.inspiration-grid button { display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e9e2f1; border-radius: 18px; padding: 8px; min-width: 0; text-align: left; color: #30283f; font-size: 12px; line-height: 1.5; box-shadow: 0 6px 22px #49336608; transition: background .2s, border-color .2s; }
+.inspiration-grid button:hover:not(:disabled) { background: #f4eefc; border-color: #b99add; }
+.inspiration-grid img { flex-shrink: 0; border-radius: 12px; width: 60px; height: 64px; object-fit: cover; }
+.inspiration-grid span { overflow-wrap: anywhere; }
 .example-status { font-size: 12px; color: #655975; }
 .everyday-app.is-home footer { margin: 18px 0 4px; border-top: 1px solid #e6deef; padding-top: 12px; }
 @media (min-width: 1000px) { .dashboard-home .dashboard-ling { padding-right: 20px; } }
@@ -60,6 +64,9 @@ body:has(.everyday-app.is-home) { background: radial-gradient(ellipse at 98% 88%
   .dashboard-home .ling-thought { font-size: 13px; padding: 12px; }
   .ling-thought svg { display: none; }
   .dashboard-possibilities li { flex-direction: column; align-items: start; gap: 6px; padding: 13px; }
+  .inspiration-grid { gap: 8px; }
+  .inspiration-grid button { flex-direction: column; align-items: stretch; gap: 8px; padding: 8px; }
+  .inspiration-grid img { width: 100%; height: 90px; }
 }
 @media (max-width: 760px) {
   .everyday-app.is-home .page-intro { padding: 29px 10px 14px; }
@@ -85,13 +92,14 @@ body:has(.everyday-app.is-home) { background: radial-gradient(ellipse at 98% 88%
   .possibility-icon svg { width: 19px; height: 19px; }
   .dashboard-bottom { order: 1; width: 100%; gap: 3px; }
   .everyday-app .dashboard-home .welcome-note { font-size: 10px; align-items: center; }
-  .dashboard-bottom .demo-guide summary { font-size: 12px; padding: 8px 4px; }
-  .dashboard-bottom .demo-guide button { gap: 9px; padding: 10px; }
+  .inspiration-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px; }
+  .inspiration-grid button { gap: 8px; font-size: 11px; }
+  .inspiration-grid img { width: 44px; height: 54px; border-radius: 9px; }
   .everyday-app.is-home footer { margin-top: 26px; }
 }
 @media (max-width: 360px) {
   .camera-orbit { width: 209px; height: 209px; }
   .camera-launch > span { font-size: 10px; }
-  .dashboard-bottom .demo-guide img { width: 46px; height: 40px; }
-  .dashboard-bottom .demo-guide button { font-size: 12px; }
+  .inspiration-grid button { flex-direction: column; align-items: stretch; }
+  .inspiration-grid img { width: 100%; height: 90px; }
 }

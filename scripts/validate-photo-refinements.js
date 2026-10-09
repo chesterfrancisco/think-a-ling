@@ -53,7 +53,7 @@ export default async function validatePhotoRefinements(page) {
     await tab.getByRole('button', { name: 'Close help', exact: true }).click()
     await tab.getByRole('button', { name: 'Ask This Space', exact: true }).click()
     assert.equal(await tab.locator('#reasoning-title').innerText(), 'Hello, thinker!')
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
 
     await tab.getByRole('button', { name: 'Add missing tag', exact: true }).click()
     const placement = tab.getByRole('button', { name: 'Place a tag on the photo', exact: true })

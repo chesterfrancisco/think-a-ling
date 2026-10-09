@@ -88,7 +88,7 @@ export default async function validateMilestone3(page) {
     }
     assert(report.requests.length === 5 && report.requests.map(item => item.imageCount).join(',') === '1,0,0,0,0', 'Modes unnecessarily repeated image inference')
     assert(report.requests[2].history, 'Follow-up history missing')
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     assert(await tab.locator('.floating-ask').getAttribute('aria-expanded') === 'false', 'Floating close must collapse chat')
     const expandedImage = await tab.locator('.image-preview').boundingBox()
     await tab.getByRole('button', { name: 'Ask This Space', exact: true }).click()

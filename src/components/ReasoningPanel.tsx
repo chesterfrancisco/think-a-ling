@@ -37,7 +37,7 @@ interface Props {
   onDetections: (value: DetectedObject[]) => void
   onOcr: (value: string) => void
   mode: ReasoningMode
-  goalRequest?: { id: number; text: string; submit?: boolean; displayText?: string }
+  goalRequest?: { id: number; text: string; submit?: boolean; prefill?: boolean; displayText?: string }
   onSceneChange?: (scene: SceneAnalysis) => void
   onTurnComplete?: (turn: SceneTurn, objectKey?: string) => void
   objectFocus?: DetectedObject
@@ -109,11 +109,11 @@ export function ReasoningPanel({ language, dismissed, image, detections, ocrText
   const correctedScene = useMemo(() => scene ? excludeDismissedDetections(applyLabelCorrections(scene, corrections), dismissed) : undefined, [scene, corrections, dismissed])
   const previousCorrections = useRef(corrections)
   const previousDismissed = useRef(dismissed)
-  const [goal, setGoal] = useState('')
+  const [goal, setGoal] = useState(goalRequest?.prefill ? goalRequest.text : '')
   const [appliedGoal, setAppliedGoal] = useState(goalRequest)
   if (goalRequest !== appliedGoal) {
     setAppliedGoal(goalRequest)
-    setGoal('')
+    setGoal(goalRequest?.prefill ? goalRequest.text : '')
   }
   const [turns, setTurns] = useState<SceneTurn[]>([])
   const [stepLists, setStepLists] = useState<Record<string, LingStepsState>>({})
@@ -141,7 +141,7 @@ export function ReasoningPanel({ language, dismissed, image, detections, ocrText
     if (previousFocus.current === focusKey && previousGoalId.current === goalRequest?.id) return
     previousFocus.current = focusKey
     previousGoalId.current = goalRequest?.id
-    setGoal('')
+    setGoal(goalRequest?.prefill ? goalRequest.text : '')
     setLastQuestion('')
     // A shared image analysis can finish for any object. A question belongs only
     // to its original selection and must not arrive in the newly selected chat.

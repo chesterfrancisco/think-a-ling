@@ -4,7 +4,7 @@
 
 Think-a-ling! is an Everyday Action Intelligence app that helps people understand, use, fix and improve what's around them. Capture a photo, inspect objects and text, work toward a goal, and keep useful discoveries with Ling.
 
-**[Public demo](https://think-a-ling.vercel.app/)** · Free to use · No account or API key required.
+**[Public demo](https://thinkaling.vercel.app/)** · Free to use · No account or API key required.
 
 ## Run locally — judges and new users
 
@@ -48,7 +48,7 @@ The local request path is `browser → Vite /local-ollama/api/chat → 127.0.0.1
 
 ## Try the workflow
 
-1. **Open camera** and capture/review a frame, or **Choose a photo** / drop one into the dashboard. For a reproducible input, expand **First time? Try a study task.** and select **Try example study notes**.
+1. **Open camera** and capture/review a frame, or **Choose a photo** / drop one into the dashboard. For a reproducible input, select **Summarize this document** under **Need inspiration?**
 2. Objects and English text appear automatically. Tap a marker, correct/remove a mistaken tag, or open **Read text**. The example contains “Photosynthesis uses light to make food.” Check OCR against the image.
 3. Choose **Analyze photo**, then Explore, Find, Fix or Improve for your goal, or **Ask This Space**. Follow-up questions reuse the current scene. Check evidence and uncertainty; model answers may be wrong.
 4. In the local Gemma app, eligible recommendations offer **Turn into steps**. Checked steps mean user-marked completion, not AI-verified physical changes.
@@ -69,7 +69,7 @@ Open **http://127.0.0.1:4173/**. The production preview intentionally has **no G
 
 For a signal-loss demonstration:
 
-1. While connected, open **Settings → Offline downloads → Prepare for offline** and wait for ready (about 75 MiB for the app, detection and English OCR). Browser reasoning requires its separate download above.
+1. While connected, open **Settings → Offline downloads → Prepare for offline** and wait for ready (about 84 MiB for the app, detection, English OCR and sample pictures). Browser reasoning requires its separate download above.
 2. Disable networking in browser developer tools and reload the same URL. Choose another image, run detection/text reading, save and revisit a discovery.
 3. For a physical Wi-Fi-off demo, prepare first and rehearse on the presentation device. A first visit without downloaded files cannot work. Browser storage can be evicted or cleared; a new build may need preparation again.
 
@@ -110,3 +110,5 @@ Detection can miss or mislabel objects. OCR targets printed English. SmolVLM ans
 React · TypeScript · Vite · MediaPipe / EfficientDet-Lite0 · Tesseract.js / English data · Transformers.js / SmolVLM / ONNX Runtime / WebGPU · Ollama / Gemma · experimental browser speech · Vercel hosting. Developed with AI-assisted coding tools. Asset sources, versions and hashes: [detection/OCR manifest](public/ai/manifest.json), [browser AI manifest](public/ai/browser-reasoning.json).
 
 Created by **Chester Francisco** for the **AppBuildersPH Local AI Hackathon 2026**.
+
+The five inspiration pictures are example inputs, not prewritten answers. [Sample provenance](public/demo/README.md) explains the generated mock photographs and synthetic study notes.

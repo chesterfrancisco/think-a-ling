@@ -42,6 +42,13 @@ export default async function validateResilience(page) {
     assert.equal(await tab.getByLabel('Answer language', { exact: true }).inputValue(), 'Filipino')
     assert.match(await tab.locator('.offline-setup summary').innerText(), /offline/i)
     await tab.getByRole('button', { name: 'Close settings' }).click()
+    const samples = await tab.locator('.inspiration-grid img').evaluateAll(images => Promise.all(images.map(async img => {
+      await img.decode()
+      const response = await fetch(img.getAttribute('src'))
+      return { loaded: img.naturalWidth > 0, status: response.status, type: response.headers.get('content-type') }
+    })))
+    assert.equal(samples.length, 5)
+    assert(samples.every(sample => sample.loaded && sample.status === 200 && sample.type?.startsWith('image/')), 'All five samples reopen offline')
     assert(await tab.evaluate(() => document.documentElement.classList.contains('still-ling')), 'Accessibility preference persists')
     await tab.locator('input[type=file]').setInputFiles('test-images/ocr-test.png'); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
@@ -72,8 +79,7 @@ export default async function validateResilience(page) {
     assert.equal(missing.status(), 404)
     assert.match(await tab.locator('h1').innerText(), /can’t find/)
     await tab.getByRole('link', { name: 'Back to Think-a-ling' }).click(); await dismissStory(tab)
-    await tab.locator('.demo-guide summary').click()
-    await tab.getByRole('button', { name: 'Try example study notes', exact: true }).click(); await ready()
+    await tab.getByRole('button', { name: 'Summarize this document', exact: true }).click(); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)

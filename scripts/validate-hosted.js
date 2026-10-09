@@ -3,7 +3,7 @@ import { dismissStory } from './dismiss-story.js'
 // Uses the real public deployment, real OCR/detector and its offline pack.
 // Does not register accounts, send mail or call a model inference backend.
 export default async function validateHosted(page) {
-  const report = { checks: [], errors: [], url: 'https://think-a-ling.vercel.app/' }
+  const report = { checks: [], errors: [], url: 'https://thinkaling.vercel.app/' }
   const context = await page.context().browser().newContext(), tab = await context.newPage()
   tab.on('pageerror', e => report.errors.push(e.message))
   const accountRequests = []
@@ -17,8 +17,7 @@ export default async function validateHosted(page) {
     await tab.getByRole('button', { name: 'Settings', exact: true }).click()
     await tab.getByLabel('Answer language', { exact: true }).selectOption('Filipino')
     await tab.getByRole('button', { name: 'Close settings' }).click()
-    await tab.locator('.demo-guide summary').click()
-    await tab.getByRole('button', { name: 'Try example study notes', exact: true }).click(); await ready()
+    await tab.getByRole('button', { name: 'Summarize this document', exact: true }).click(); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)

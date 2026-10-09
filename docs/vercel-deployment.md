@@ -1,6 +1,8 @@
 # Think-a-ling: Vercel deployment
 
-Updated 2026-10-10. Target: https://think-a-ling.vercel.app/. The source builds to `dist/`. Local Gemma/Ollama stays available in development; no public Ollama tunnel or cloud inference was added. Current validation and risks are in [offline and risk review](offline-accounts-risk-review.md).
+Updated 2026-10-10. Target: https://thinkaling.vercel.app/. The source builds to `dist/`. Local Gemma/Ollama stays available in development; no public Ollama tunnel or cloud inference was added. Current validation and risks are in [offline and risk review](offline-accounts-risk-review.md).
+
+The `thinkaling.vercel.app` domain is assigned to the existing **think-a-ling** Vercel project; the GitHub repository and local folder do not need renaming. The earlier domain remains available for existing browser saves. Saves, settings and downloaded offline/model caches belong to each origin: they do not move automatically to the new address. Prepare downloads again at the new address if needed.
 
 ## Build settings
 
@@ -73,10 +75,10 @@ Use the existing Think-a-ling project and `./` directory. The command publishes.
 
 ## Hosted acceptance checks
 
-1. Confirm the deployment shows the intended Git commit, purple navbar, Saved and Settings, with no account controls. **First time? Try a study task.** expands to the example button only. A browser with an old service worker may need all site tabs closed before the new worker activates.
+1. Confirm the deployment shows the intended Git commit, purple navbar, Saved and Settings, with no account controls. **Need inspiration?** offers five sample pictures that open real inputs and prepare a question, without starting optional AI downloads. A browser with an old service worker may need all site tabs closed before the new worker activates.
 2. In a fresh browser, select a photo: real detection/OCR should work without an account or model download. Inspect hotspot evidence, change the photo, hide markers and try fullscreen. Camera capture must show review/retake before Analyze.
 3. Open Settings. Change answer language and accessibility preferences; close and reopen, then reload. Check that selections persist and that language controls are absent from the analysis card. Save/revisit/delete recognized text on this device.
-4. Choose **Settings → Offline downloads → Prepare for offline**. Wait for ready. Disable browser networking and reload. Upload study notes and another photo, save/revisit text, crop/rotate and rescan. Core pack is about 75 MiB.
+4. Choose **Settings → Offline downloads → Prepare for offline**. Wait for ready. Disable browser networking and reload. Upload study notes and another photo, save/revisit text, crop/rotate and rescan. Core pack is about 84 MiB, including the five sample pictures.
 5. Separately enable on-device AI while online, complete its approximately 374 MB download, then test cached analysis after an offline reload on a compatible device. Check the answer against the image: the small model can omit/invent details and return unhelpful output.
 6. Request a nonexistent page and verify Ling's fallback with HTTP 404. Missing model paths should not return app HTML. Confirm WASM MIME types, model-part downloads and `/sw.js` headers. Do not manually add gzip Content-Encoding to the OCR data file; the cache verifier accepts the two known raw/decoded representations.
 7. Confirm no photo upload, cloud inference or Supabase request occurs. Browser analysis uses local assets; Gemma remains available only in the local development app.

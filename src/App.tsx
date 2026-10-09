@@ -64,7 +64,7 @@ function App() {
   const [mode, setMode] = useState<ReasoningMode>('EXPLORE')
   const [panelOpen, setPanelOpen] = useState(false)
   const [panelVisit, setPanelVisit] = useState(0)
-  const [goalRequest, setGoalRequest] = useState<{ id: number; text: string; submit?: boolean; objectKey?: string; displayText?: string }>()
+  const [goalRequest, setGoalRequest] = useState<{ id: number; text: string; submit?: boolean; prefill?: boolean; objectKey?: string; displayText?: string }>()
   const [sceneSnapshot, setSceneSnapshot] = useState<SceneAnalysis>()
   const [objectAnswers, setObjectAnswers] = useState<Record<string, SceneTurn>>({})
   const [selectedIndex, setSelectedIndex] = useState<number>()
@@ -97,11 +97,34 @@ function App() {
 
   useEffect(() => {
     const changed = () => setCameraNative(document.fullscreenElement === viewfinder.current)
-    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setCameraFill(false) }
     document.addEventListener('fullscreenchange', changed)
-    window.addEventListener('keydown', escape)
-    return () => { document.removeEventListener('fullscreenchange', changed); window.removeEventListener('keydown', escape) }
+    return () => { document.removeEventListener('fullscreenchange', changed) }
   }, [])
+
+  useEffect(() => {
+    const escape = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || event.isComposing) return
+      // A modal takes priority over the photo/chat behind it. Preserve cancel
+      // handlers (including editor cleanup), native close events and focus return.
+      const modal = document.activeElement?.closest<HTMLDialogElement>('dialog[open]')
+        ?? Array.from(document.querySelectorAll<HTMLDialogElement>('dialog:modal')).at(-1)
+      if (modal) {
+        event.preventDefault()
+        if (modal.dispatchEvent(new Event('cancel', { cancelable: true })) && modal.open) modal.close()
+        return
+      }
+      if (placingTag) { event.preventDefault(); setPlacingTag(false); return }
+      if (selectedIndex !== undefined) {
+        event.preventDefault(); setSelectedIndex(undefined)
+        viewfinder.current?.querySelector<HTMLButtonElement>(`[data-detection-index="${selectedIndex}"]`)?.focus({ preventScroll: true })
+      } else if (panelOpen) {
+        event.preventDefault(); setPanelOpen(false)
+        document.querySelector<HTMLButtonElement>('.floating-ask')?.focus({ preventScroll: true })
+      } else if (cameraFill) { event.preventDefault(); setCameraFill(false) }
+    }
+    window.addEventListener('keydown', escape)
+    return () => window.removeEventListener('keydown', escape)
+  }, [cameraFill, panelOpen, placingTag, selectedIndex])
 
   useEffect(() => () => {
     stopBrowserAi()
@@ -123,7 +146,7 @@ function App() {
   }, [panelOpen, panelVisit])
 
 
-  async function selectImage(file: File, captured = false, object?: string) {
+  async function selectImage(file: File, captured = false, object?: string, exampleQuestion?: string) {
     setEditing(false); setVoiceRequest(0)
     setCameraFill(false)
     if (document.fullscreenElement === viewfinder.current) void document.exitFullscreen().catch(() => {})
@@ -153,8 +176,9 @@ function App() {
       currentImage.current = next
       setCameraOpen(false)
       setImage(next)
-      setPanelOpen(captured && localReasoningAvailable)
-      setGoalRequest(object ? { id: Date.now(), text: discoveryCategory(object) === 'people'
+      setPanelOpen(!!exampleQuestion || (captured && localReasoningAvailable))
+      if (exampleQuestion) setMode('EXPLORE')
+      setGoalRequest(exampleQuestion ? { id: Date.now(), text: exampleQuestion, prefill: true } : object ? { id: Date.now(), text: discoveryCategory(object) === 'people'
         ? 'Explain the visible surroundings in this captured photo. Do not identify the person or infer personal traits. Distinguish observation from inference.'
         : 'Explain the visible ' + object + ' and suggest practical uses grounded in this captured scene. Distinguish observation from inference.' } : undefined)
       // Return useful browser inference first. Both engines are retained for
@@ -388,7 +412,7 @@ function App() {
         <div ref={photoFrame} className="image-stage" hidden={cameraOpen}>
           {image && <div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Exit fullscreen photo" onClick={() => void document.exitFullscreen()}><X size={21} /> Close</button></div>}
           {image ? <ImagePreview image={image} detections={detection.data} dismissed={dismissedTags} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
-            manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <HomeDashboard key={revision.current} busy={busy} onCamera={startCamera} onChoose={() => fileInput.current?.click()} onFile={selectImage} onError={setImageError} />}
+            manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <HomeDashboard key={revision.current} busy={busy} onCamera={startCamera} onChoose={() => fileInput.current?.click()} onFile={selectImage} onExample={(file, question) => selectImage(file, false, undefined, question)} onError={setImageError} />}
         </div>
         <input ref={fileInput} id="image-upload" className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" disabled={loadingImage}
           aria-label="Upload an image" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void selectImage(file) }} />
@@ -425,7 +449,7 @@ function App() {
             setMode(nextMode); setSelectedIndex(undefined); setPanelOpen(true)
             setGoalRequest({ id: Date.now(), text, submit, displayText: 'Ask about ' + objectDisplayName(detection.data[selectedIndex], detection.data, corrections) + ' in this photo…', objectKey: discoveryKey(detection.data[selectedIndex]) })
           }} />}
-        <aside ref={chatPanel} tabIndex={-1} id="ask-panel" className="sheet reasoning-drawer" hidden={!panelOpen} aria-label="Scene intelligence" onKeyDown={event => { if (event.key === 'Escape') { setPanelOpen(false); document.querySelector<HTMLButtonElement>('.floating-ask')?.focus() } }}>
+        <aside ref={chatPanel} tabIndex={-1} id="ask-panel" className="sheet reasoning-drawer" hidden={!panelOpen} aria-label="Scene intelligence">
           <div className="sheet-handle" />
           <button className="sheet-close" aria-label="Close panel" onClick={() => setPanelOpen(false)}><X size={18} /></button>
           {goalRequest?.objectKey && objectAnswers[goalRequest.objectKey] && objectAnswers[goalRequest.objectKey].sceneId === sceneSnapshot?.id &&
@@ -447,7 +471,7 @@ function App() {
         <span className="viewfinder-corner corner-tl" /><span className="viewfinder-corner corner-br" />
       </section>
       {sceneSnapshot && <ModeChoices scene={sceneSnapshot} mode={mode} goal={goalRequest?.text} onSelect={name => { setMode(name); setObjectFocus(undefined); setGoalRequest(undefined); openQuestion() }} />}
-      {image && <button className="floating-ask" aria-label={panelOpen ? 'Close chat' : 'Ask This Space'} aria-expanded={panelOpen} aria-controls="ask-panel" onClick={() => { if (panelOpen) setPanelOpen(false); else openQuestion() }}><Mascot thinking={sceneBuilding} /><span>{panelOpen ? 'Close chat' : 'Ask This Space'}</span>{panelOpen ? <X size={19} /> : <ArrowUpRight size={19} />}</button>}
+      {image && <button className="floating-ask" aria-label={panelOpen ? 'Think you later!' : 'Ask This Space'} aria-expanded={panelOpen} aria-controls="ask-panel" onClick={() => { if (panelOpen) setPanelOpen(false); else openQuestion() }}><Mascot thinking={sceneBuilding} /><span>{panelOpen ? 'Think you later!' : 'Ask This Space'}</span>{panelOpen ? <X size={19} /> : <ArrowUpRight size={19} />}</button>}
       {summaryNotice && sceneSnapshot && <div className="summary-ready-notice" role="status"><button onClick={() => { setDismissedSummaryId(sceneSnapshot.id); summary.current?.focus({ preventScroll: true }); summary.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }) }}><ArrowDown size={20} /><span><strong>HERE'S THE PICTURE</strong><small>Your photo summary is ready. View below.</small></span></button><button aria-label="Dismiss summary notice" onClick={() => setDismissedSummaryId(sceneSnapshot.id)}><X size={17} /></button></div>}
       <footer><span>Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026</span></footer>
       {!image && !cameraOpen && <button className="replay-story" onClick={() => setShowStory(true)}>Meet Ling again</button>}
@@ -472,13 +496,24 @@ function App() {
     <dialog ref={about} className="help-dialog about-dialog" aria-labelledby="about-title">
       <button className="sheet-close" onClick={() => about.current?.close()} aria-label="Close about"><X size={20} /></button><Brand />
       <h2 id="about-title">Your world. Full of possibilities.</h2>
-      <p><strong>Point at anything. Know what to do.</strong> Think-a-ling! is an Everyday Action Intelligence app: discover what you can understand, use, fix, and improve with what’s around you.</p>
-      <p>Meet Ling, your guide from a little discovery to a practical next step. Explore, Find, Fix, Improve, or Ask This Space about what you’re trying to accomplish.</p>
-      <p>Created by <strong>Chester Francisco</strong> as an <strong>AppBuildersPH Local AI Hackathon 2026</strong> entry, developed within 24 hours using local AI. This is a hackathon prototype, with room to learn and improve.</p>
+      <p><strong>Turn what you see into what you can do.</strong></p>
+      <p>Meet <strong>Think-a-ling!</strong>, an AI-powered everyday productivity app that helps you make sense of what's around you and turn simple discoveries into meaningful actions.</p>
+      <p>From understanding unfamiliar objects and reading product labels to exploring ideas, solving everyday problems, and finding better ways to get things done, Think-a-ling! brings a new perspective to the things you encounter every day.</p>
+      <p>Powered by <strong>Everyday Action Intelligence</strong>, it goes beyond recognizing what's in front of you. It helps you <strong>Explore, Find, Fix, and Improve</strong> through practical insights and useful next steps.</p>
+      <p>And there's <strong>Ling</strong>, your curious little guide! Whether you have a question, need a fresh perspective, or simply want to figure something out, Ling is here to help you discover possibilities you might have overlooked.</p>
+      <p><strong>A little curiosity. A whole lot of possibilities.</strong></p>
+      <p>Created by <strong>Chester Francisco</strong> for the <strong>AppBuildersPH Local AI Hackathon 2026</strong>, Think-a-ling! was developed within a 24-hour hackathon challenge to explore how local AI can make everyday tasks simpler, smarter, and more accessible.</p>
+      <p>It's an evolving prototype, built to learn, improve, and grow with every discovery.</p>
       <h3>Built with local AI</h3>
-      <p>React, Vite, and TypeScript power the interface. MediaPipe EfficientDet-Lite0 detects objects and Tesseract.js reads text in your browser. In the local development app, Gemma 3 4B through Ollama provides deeper reasoning on the same computer.</p>
-      <p>The public website supports browser detection, text reading, and optional experimental SmolVLM 500M answers through Transformers.js and WebGPU. It cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI or cloud photo storage is used. The app is free to use without an account. Saved discoveries stay in this browser.</p>
-      <p><strong>Online website, local AI.</strong> Internet is needed for your first visit and downloads. For use without a signal, prepare Offline downloads in Settings before going offline. This keeps the app and its detection and English text-reading files in this browser; optional AI answers need a separate model download. Saved keeps your discoveries, not the app itself.</p>
+      <p>Think-a-ling! combines <strong>computer vision, text recognition, and on-device AI</strong> to turn everyday observations into useful information and practical actions.</p>
+      <p>Built with React, Vite, and TypeScript, the application uses <strong>MediaPipe EfficientDet-Lite0</strong> to recognize supported objects and <strong>Tesseract.js</strong> to read text directly in your browser.</p>
+      <p>For deeper understanding, the public website offers optional experimental AI reasoning powered by <strong>SmolVLM 500M</strong>, running on compatible devices through Transformers.js and WebGPU. The separate local development version uses <strong>Gemma 3 4B through Ollama</strong> for more advanced contextual reasoning.</p>
+      <p><strong>Your discoveries, your device.</strong> Core object detection and text recognition run locally in your browser. The public app does not use cloud AI inference or cloud photo storage. You can start exploring for free without an account, and discoveries you choose to save remain in your browser.</p>
+      <p>AI-generated answers may be incomplete or inaccurate, so important information should always be verified.</p>
+      <p><strong>Online website. Local intelligence.</strong></p>
+      <p>Think-a-ling! needs internet access for your first visit and initial downloads. To use supported features without a connection, open <strong>Settings → Offline downloads → Prepare for offline</strong> while online.</p>
+      <p>Once prepared, object detection, English text recognition, and saved discoveries can remain available in the same browser without internet. Optional AI reasoning requires a separate model download and compatible hardware.</p>
+      <p>Because sometimes, the smartest discoveries begin with what's already around you.</p>
       <button className="primary" onClick={() => { about.current?.close(); help.current?.showModal() }}>How to use Think-a-ling <ArrowUpRight size={18} /></button>
     </dialog>
     <dialog ref={help} className="help-dialog navigation-help" aria-labelledby="help-title">

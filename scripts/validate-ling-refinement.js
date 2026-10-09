@@ -81,7 +81,7 @@ export default async function validateLingRefinement(page) {
     await fulfill(heldIntent, fixture.turn.response)
     await tab.locator('.intent-result').waitFor()
     const sceneId = await tab.locator('.reasoning-panel').getAttribute('data-scene-id')
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     assert.equal(await tab.locator('.viewfinder .scene-summary').count(), 1)
     assert.equal(await tab.locator('.viewfinder .intent-choices').count(), 0)
     for (const width of [1280, 390, 320]) {
@@ -109,7 +109,7 @@ export default async function validateLingRefinement(page) {
     assert(report.requests[2].prompt.includes('"userLabel":"family pet"'))
     await tab.getByRole('button', { name: 'Cancel analysis', exact: true }).click()
     await heldIntent.abort().catch(() => {})
-    await tab.getByRole('button', { name: 'Close chat', exact: true }).click()
+    await tab.getByRole('button', { name: 'Think you later!', exact: true }).click()
     await tab.locator('.detection-hotspot').first().click()
     await tab.getByRole('button', { name: 'Edit your label', exact: true }).click()
     await tab.getByRole('button', { name: 'Use AI label', exact: true }).click()
