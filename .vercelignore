@@ -5,6 +5,7 @@
 !/scripts
 /scripts/*
 !/scripts/check-ai-assets.mjs
+!/scripts/check-browser-ai.mjs
 !/package.json
 !/package-lock.json
 !/tsconfig.json

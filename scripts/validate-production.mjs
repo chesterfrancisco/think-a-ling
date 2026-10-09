@@ -16,7 +16,7 @@ const manifest = JSON.parse(await readFile(resolve(dist, 'ai/manifest.json'), 'u
 const { chromium } = process.argv[2] ? await import(pathToFileURL(resolve(process.argv[2])).href) : await import('playwright')
 const report = { checks: [], predictions: [], externalRequests: [], nonReadRequests: [], pageErrors: [] }
 await mkdir(resolve(root, 'test-results'), { recursive: true })
-const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.gz': 'application/gzip' }
+const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.gz': 'application/gzip' }
 const server = createServer(async (request, response) => {
   for (const { key, value } of config.headers.find(rule => rule.source === '/(.*)').headers) response.setHeader(key, value)
   try {
@@ -87,7 +87,7 @@ try {
   assert.match(response.headers()['content-security-policy'], /connect-src 'self'/)
   await dismissStory(page)
   assert.equal(await page.evaluate(() => window.testStreams.length), 0)
-  assert.match(await page.locator('.runtime-strip').innerText(), /deeper answers need the local app/i)
+  assert.match(await page.locator('.runtime-strip').innerText(), /optional on-device AI answers/i)
   const ready = () => page.waitForFunction(() => {
     const stage = document.querySelector('.viewfinder')
     return stage?.dataset.detectionStatus === 'done' && stage?.dataset.ocrStatus === 'done'
@@ -101,7 +101,7 @@ try {
   report.coldDetectionAndOcrMs = Date.now() - start
   assert.equal(await page.locator('.image-preview svg rect').count(), 4)
   report.predictions = await page.locator('.detection-hotspot').allTextContents()
-  assert.equal(await page.getByRole('button', { name: 'Explore this photo', exact: true }).isDisabled(), true)
+  assert.equal(await page.getByRole('button', { name: 'Explore this photo', exact: true }).isDisabled(), false)
   for (const width of [1280, 390, 320]) {
     await page.setViewportSize({ width, height: 900 })
     assert.equal(await page.evaluate(() => {
@@ -116,7 +116,7 @@ try {
     const card = page.getByRole('complementary', { name: 'Detected object details' })
     assert.equal(await card.isVisible(), true)
     assert.equal(await card.locator('.action-grid button:not([disabled])').count(), 0)
-    assert.match(await card.locator('.object-action-note').last().innerText(), /require the local app with Ollama/)
+    assert.match(await card.locator('.object-action-note').last().innerText(), /local app with Ollama/)
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), true)
     if (width === 390) await page.screenshot({ path: resolve(root, 'test-results/production-object-mobile.png'), fullPage: true })
     await page.getByRole('button', { name: 'Close object details' }).click()
@@ -124,7 +124,8 @@ try {
   report.checks.push('Actual upload detection, four measured boxes, hotspots and object cards at 1280/390/320px; unavailable object actions disabled')
   await page.getByRole('button', { name: 'Ask This Space', exact: true }).click()
   assert.equal(await page.getByRole('button', { name: 'Build shared scene' }).isDisabled(), true)
-  assert.match(await page.locator('.reasoning-panel .local-notice').innerText(), /Deeper answers need the local app/)
+  assert.equal(await page.getByRole('button', { name: 'Enable on-device AI', exact: true }).isVisible(), true)
+  assert.match(await page.locator('.browser-ai-setup').innerText(), /Experimental SmolVLM/)
   assert.equal(await page.locator('.reasoning-panel').getAttribute('aria-busy'), 'false')
   await page.getByRole('button', { name: 'Close panel', exact: true }).click()
   await page.setViewportSize({ width: 1280, height: 900 })
@@ -136,7 +137,7 @@ try {
   assert.equal(await page.getByRole('button', { name: 'Explain this text' }).isDisabled(), true)
   await page.screenshot({ path: resolve(root, 'test-results/production-ocr.png'), fullPage: true })
   await page.getByRole('button', { name: 'Close text', exact: true }).click()
-  report.checks.push('Actual OCR reads known fixture; explanatory actions disabled; public chat explains limits without loading or requests')
+  report.checks.push('Actual OCR reads known fixture; explanation disabled before opt-in; public chat offers optional browser AI without automatically downloading it')
   await upload('blank.png')
   assert.equal(await page.locator('.detection-hotspot').count(), 0)
   assert.match(await page.locator('.photo-hint').innerText(), /No objects found/)

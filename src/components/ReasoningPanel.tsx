@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { UploadedImage } from '../services/image'
 import type { DetectedObject } from '../services/objectDetection'
-import { localReasoningAvailable } from '../services/ollama'
+import { localReasoningAvailable as ollamaAvailable } from '../services/ollama'
+import { useBrowserAi } from '../services/browserAi'
+import { BrowserAiSetup } from './BrowserAiSetup'
 import { buildScene } from '../services/sceneAnalysis'
 import { answerIntent } from '../services/intentEngine'
 import type { ReasoningMode } from '../services/reasoning'
@@ -35,7 +37,7 @@ interface Props {
   corrections: LabelCorrection[]
 }
 
-const sourceNames = { mediapipe: 'Object recognition', tesseract: 'Text in the photo', gemma: 'Photo interpretation', user: 'Your label correction' }
+const sourceNames = { mediapipe: 'Object recognition', tesseract: 'Text in the photo', gemma: 'Gemma interpretation', smolvlm: 'Experimental browser interpretation', user: 'Your label correction' }
 function EvidenceReferences({ ids, scene }: { ids: string[]; scene: SceneAnalysis }) {
   return <div className="evidence-references">{[...new Set(ids)].map(id => {
     const item = scene.evidence.find(evidence => evidence.id === id)
@@ -73,7 +75,7 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
       {response.issues.length ? <ul>{response.issues.map((item, i) => <li key={i}>
         <strong>{item.description}</strong><EvidenceReferences ids={item.evidence_ids} scene={scene} />
         {item.checks.map((check, j) => <p key={j}>Suggested check (not a diagnosis): {check}</p>)}
-      </li>)}</ul> : <p>No evidence-supported visible issues reported. This does not certify safety or rule out hidden problems.</p>}
+      </li>)}</ul> : <p>{scene.reasoner === 'browser' ? 'Browser mode has not performed a structured issue assessment. Any checks above are unverified suggestions.' : 'No evidence-supported visible issues reported. This does not certify safety or rule out hidden problems.'}</p>}
     </>}
     {!!turn.grounding.studyCards.length && <><h4>Study cards — answers matched to recognized text</h4>
       {turn.grounding.studyCards.map((card, i) => <details className="study-card" key={i}>
@@ -85,6 +87,8 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
 }
 
 export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel }: Props) {
+  const browserAi = useBrowserAi()
+  const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [scene, setScene] = useState<SceneAnalysis>()
   const correctedScene = useMemo(() => scene ? applyLabelCorrections(scene, corrections) : undefined, [scene, corrections])
   const previousCorrections = useRef(corrections)
@@ -259,7 +263,7 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     <div className="ask-heading"><Mascot thinking={status === 'loading'} /><div><span className="sheet-kicker">A LITTLE HELP FROM LING</span><h2 id="reasoning-title">Hello, thinker!</h2></div></div>
     <div className="selected-intent" data-mode={mode} role="status"><span className="selected-intent-dot" /><div><strong>{intentPresentation[mode].label}</strong><span>{intentPresentation[mode].hint}</span></div></div>
     {objectFocus && <p className="object-chat-context">About <strong>{objectLabel ?? objectFocus.label}</strong><span>Answers stay with this selected object.</span></p>}
-    {!localReasoningAvailable && <p className="local-notice">You can explore objects and read text here. Deeper answers need the local app with Ollama running on your computer.</p>}
+    {!ollamaAvailable && <BrowserAiSetup />}
     {!scene && localReasoningAvailable && <p>What are you trying to do? Let’s start with what’s here.</p>}
     {!scene && image && <div className="first-question"><label htmlFor="scene-goal">Your question <span className="context-note">Optional</span></label><input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading' || !localReasoningAvailable} onChange={event => setGoal(event.target.value)} placeholder={placeholder} /></div>}
     {!scene && <button aria-label={status === 'error' || status === 'cancelled' ? 'Retry scene' : 'Build shared scene'} onClick={() => void (async () => {

@@ -4,7 +4,8 @@ import type { DetectedObject } from '../services/objectDetection'
 import type { LabelCorrection, SceneAnalysis, SceneTurn } from '../types/scene'
 import type { ReasoningMode } from '../services/reasoning'
 import { discoveryActions, discoveryCategory, discoveryExcerpt, discoveryGoal } from './objectDiscovery'
-import { localReasoningAvailable } from '../services/ollama'
+import { localReasoningAvailable as ollamaAvailable } from '../services/ollama'
+import { useBrowserAi } from '../services/browserAi'
 
 interface Props {
   detection: DetectedObject
@@ -23,6 +24,8 @@ interface Props {
 }
 
 export function ObjectCard({ detection, index, displayName, scene, response, ocr, busy, onClose, onReadText, onAction, correction, onCorrect, onReplace }: Props) {
+  const browserAi = useBrowserAi()
+  const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [editing, setEditing] = useState(false)
   const [labelError, setLabelError] = useState('')
   const close = useRef<HTMLButtonElement>(null)
@@ -62,7 +65,7 @@ export function ObjectCard({ detection, index, displayName, scene, response, ocr
       <p className="object-action-note">What would you like to do with this?</p>
       <div className="action-grid" aria-label={'Next actions for ' + label}>
         {discoveryActions(actionLabel, { ocrText: text, userGoal: answer?.intent.goal }).map(action => <button key={action.label} disabled={busy || (action.kind !== 'ocr' && !localReasoningAvailable)}
-          title={action.kind !== 'ocr' && !localReasoningAvailable ? 'Requires the local app with Ollama' : undefined}
+          title={action.kind !== 'ocr' && !localReasoningAvailable ? 'Open Ask This Space to enable on-device AI' : undefined}
           onClick={() => action.kind === 'ocr' ? onReadText() : onAction(action.mode, discoveryGoal(action, detection, scene, correction?.label, answer?.intent.goal), action.kind !== 'ask')}>
           {action.kind === 'ask' ? <AudioLines size={16} /> : action.kind === 'ocr' ? <ScanText size={16} /> : <ArrowUpRight size={16} />}{action.label}
         </button>)}
@@ -80,7 +83,7 @@ export function ObjectCard({ detection, index, displayName, scene, response, ocr
           {text.length > 200 && <details><summary>Read all text</summary><p>{text}</p></details>}</>}
         {ocr.status === 'done' && !text && <p>No readable text found in this photo.</p>}
       </section>}
-      <p className="object-action-note">{!localReasoningAvailable ? 'Object recognition and text reading work here. These deeper answers require the local app with Ollama.' : scene ? 'Scene saved. Keep exploring without rescanning.' : 'Choose an action to explore with local AI.'}</p>
+      <p className="object-action-note">{!localReasoningAvailable ? 'Open Ask This Space to enable experimental on-device answers. Deeper Gemma features remain in the local app with Ollama.' : scene ? 'Scene saved. Keep exploring without rescanning.' : 'Choose an action to explore with local AI.'}</p>
       <button className="clearer-photo" onClick={onReplace}>Upload a clearer photo</button>
       <details className="discovery-evidence">
         <summary>About this recognition</summary>

@@ -47,7 +47,7 @@ export function LingStory({ onDone, startWithSplash = true, skipStory = false }:
       <span className="story-eyebrow">{['A LITTLE HELLO. A WORLD OF POSSIBILITIES.', 'YOUR WORKSPACE', 'THE EVERYDAY LABEL', 'YOUR NEXT LIGHTBULB MOMENT', 'A LITTLE CLOSER LOOK'][step]}</span>
       <LingStoryArt activity={page.activity} />
       <div className="story-copy"><h1 ref={heading} tabIndex={-1}>{page.title}</h1>
-        <p className="story-question">“{page.question}”</p><p className="story-description">{page.text}{step === 0 && !localReasoningAvailable ? ' This web version starts with objects and readable text. Deeper answers and Ling Steps need the local app with Ollama.' : ''}</p></div>
+        <p className="story-question">“{page.question}”</p><p className="story-description">{page.text}{step === 0 && !localReasoningAvailable ? ' Start with objects and readable text. Enable optional on-device AI for experimental answers; deeper Gemma features and Ling Steps need the local app.' : ''}</p></div>
     </div>
     <footer className="story-footer"><nav className="story-dots" aria-label="Introduction steps">{pages.map((item, index) => <button key={item.title} aria-label={'Story ' + (index + 1)} aria-current={step === index ? 'step' : undefined} onClick={() => setStep(index)} />)}</nav>
       <div className="story-controls"><button className="story-back" aria-label="Previous story" disabled={step === 0} onClick={() => setStep(step - 1)}><ArrowLeft size={20} /></button>

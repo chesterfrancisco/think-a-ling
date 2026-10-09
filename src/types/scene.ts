@@ -3,7 +3,7 @@ import type { ReasoningMode } from '../services/reasoning'
 
 export interface Evidence {
   id: string
-  source: 'mediapipe' | 'tesseract' | 'gemma' | 'user'
+  source: 'mediapipe' | 'tesseract' | 'gemma' | 'smolvlm' | 'user'
   kind: 'observed' | 'inferred'
   description: string
 }
@@ -36,6 +36,7 @@ export interface OCRText {
 }
 
 export interface SceneAnalysis {
+  reasoner?: 'browser'
   id: string
   image: { name: string; width: number; height: number; url: string }
   description: string

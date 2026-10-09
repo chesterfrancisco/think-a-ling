@@ -1,5 +1,11 @@
 /* One photo, one interpretation, one place to ask. */
 .ling-mascot { display: block; width: 56px; height: 56px; flex-shrink: 0; }
+.browser-ai-setup { background: #eee6f8; border: 1px solid #d5c5eb; border-radius: 16px; padding: 16px; margin: 16px 0; }
+.browser-ai-setup strong { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.browser-ai-setup p, .browser-ai-setup small { font-size: 12px; line-height: 1.6; margin: 10px 0; color: #5e4d72; }
+.browser-ai-setup button { margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 7px; min-height: 44px; padding: 10px 12px; border-radius: 12px; }
+.browser-ai-setup .remove-browser-ai { background: none; font-size: 11px; color: #685477; padding: 8px 0; }
+.browser-ai-setup progress { width: 100%; accent-color: #7350ac; }
 .mascot-welcome { display: flex; align-items: center; justify-content: center; flex-direction: column; text-align: center; }
 .mascot-orbit { width: 260px; height: 260px; display: grid; place-items: center; background: #e1d7f7; border-radius: 50%; box-shadow: 0 0 0 18px #e8e0f6; }
 .mascot-orbit .ling-mascot { width: 245px; height: 245px; transform: rotate(-7deg); }

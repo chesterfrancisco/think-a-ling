@@ -1,6 +1,6 @@
 # Milestone 4: Vercel deployment
 
-Prepared and tested on 2026-10-09. The production artifact is `dist/` (36 files, approximately 74.03 MiB). This pass prepares deployment; it does not publish a Vercel URL.
+Updated and tested on 2026-10-09, including opt-in browser reasoning. The production artifact is `dist/`, now including approximately 374 MB of optional SmolVLM/runtime assets. These are static downloads, not a server-side AI service. See [real model results and limitations](browser-ai-validation.md). This pass does not verify a live Vercel URL.
 
 ## Public feature boundary
 
@@ -9,6 +9,7 @@ Prepared and tested on 2026-10-09. The production artifact is `dist/` (36 files,
 | Photo selection, live camera, capture review/retake | Available; camera needs permission and a secure context | Available |
 | MediaPipe detection, measured boxes, hotspots, object cards, label corrections | In the visitor's browser | In the browser |
 | Tesseract English OCR and reading extracted text | In the visitor's browser | In the browser |
+| Short interpretations and follow-up answers | Optional experimental SmolVLM: explicit enable/download, compatible WebGPU device required | Existing Gemma workflow remains the default |
 | Gemma scene descriptions, object questions, Explore/Find/Fix/Improve reasoning, text explanation and study prompts | Unavailable; related actions disabled with a local-app explanation | Local Ollama `gemma3:4b` via the guarded Vite proxy |
 | Continued detection/OCR without networking | Verified after both engines initialize, while the page remains open | Same browser behavior |
 | Offline page reload or installed PWA | Not supported | Not supported |
@@ -75,12 +76,13 @@ Alternatively, import a Git repository in Vercel and use the same settings. This
 
 ## Check the resulting HTTPS URL
 
-1. Open the published URL in a fresh browser. Let the splash complete, then continue. Confirm that the app explains that deeper answers need the local app.
-2. Select a clear photo with supported objects. Wait for recognition, tap a green hotspot, and inspect the object card. Deeper actions should be disabled. Hide/show markers and try a narrow mobile viewport.
-3. Select a printed-text photo, choose **Read text**, and inspect the actual text. **Explain this text** should be disabled with a local-app message.
+1. Open the published URL in a fresh browser. Let the splash complete, then continue. Confirm that browser reasoning is presented as optional and experimental.
+2. Select a clear photo with supported objects. Wait for recognition, tap a green hotspot, and inspect the object card. Reasoning actions are disabled until on-device AI is enabled. Hide/show markers and try a narrow mobile viewport.
+3. Select a printed-text photo, choose **Read text**, and inspect the actual text. **Explain this text** is disabled until on-device AI is ready. Structured study cards still require the local Gemma app.
 4. Open the camera, allow access, capture, review, retake, then confirm **Analyze photo**. Detection and OCR should complete without a Gemma loading state. Back should release camera tracks.
 5. Inspect Network: worker, language and model requests should be same-origin and successful; `.wasm` responses should have `application/wasm`. There should be no photo/API POST or call to localhost/Ollama. Do not configure `Content-Encoding: gzip` manually for the compressed OCR language file.
 6. After detection and OCR initialize, disable networking without reloading and select another photo. Inference should continue. Re-enable networking before refreshing the page.
+7. Choose **Enable AI to analyze**, then **Enable on-device AI**. Model files should start downloading only after this explicit consent. Wait for **On-device AI ready**, choose **Analyze photo**, then ask a follow-up. Check actual generated answers against the photo; the small model can invent details. Test cancel/retry and **Remove downloaded model**. On unsupported WebGPU devices, detection and OCR must remain usable.
 
 For a public submission, check the project's deployment protection settings so intended reviewers can access the final production URL. This has not been changed or verified by this preparation task.
 
@@ -88,20 +90,20 @@ For a public submission, check the project's deployment protection settings so i
 
 | Check | Result |
 | --- | --- |
-| Production build | Passed; source and output hashes for all 17 assets match |
+| Production build | Passed; source/output integrity checks for detection/OCR and optional browser model/runtime assets |
 | Lint | Passed |
-| Unit tests | 37 passed, 0 failed |
+| Unit tests | 44 passed, 0 failed |
 | Production smoke with configured response headers | Passed on Chrome 153.0.8010.55 |
 | Detection | Actual four detections: Dog 1, Cat 1, Dog 2, Cat 2; real boxes/hotspots at 1280/390/320px |
 | OCR | Actual recognition included `Read this text without internet.` and `Invoice 12345 Total 250.00` |
 | Camera | Real browser getUserMedia API with a file-backed camera; live detection, capture/review, retake, confirmation and track cleanup passed |
-| Public reasoning | Disabled object actions, disabled explanation/analysis and informative chat; no indefinite thinking state |
+| Public reasoning | Opt-in real SmolVLM image answer and text-only follow-up passed; unsupported-device, download failure, retry/cancel and cache removal checks passed |
 | Network/privacy | Zero external requests, image/API POSTs or page errors during smoke interactions |
 | Offline inference | New images processed after initialization with all browser networking disabled |
 | Existing Milestone 1 production regressions | Passed, including missing-asset failures/retry, blank/corrupt uploads, disposal/reinitialization and offline inference |
 | Local development proxy guard | Passed all eight rejection checks; preview endpoint returned 404; no generation requested |
 
-The smoke's cold detection-plus-OCR measurement was 616 ms on this laptop over loopback, after local asset checks. This is not an internet download or mobile-device benchmark. AI assets total 72.8 MiB, including compatibility variants; the browser selects the variants it needs. First load on a public connection can be considerably slower.
+The latest smoke's cold detection-plus-OCR measurement was 574 ms on this laptop over loopback, after local asset checks. This is not an internet download or mobile-device benchmark. Detection/OCR assets total 72.8 MiB, including compatibility variants. Optional browser reasoning adds approximately 374 MB, fetched after explicit consent; first image analysis took 38.84 seconds in the production browser test. See the separate validation report for quality failures and scope limits.
 
 Machine-readable evidence and screenshots are in `test-results/production-smoke.json`, `production-object-mobile.png`, `production-ocr.png`, `validate-milestone1.json` and `security-audit.json`. They are local artifacts, excluded from deployment.
 
@@ -109,7 +111,7 @@ Machine-readable evidence and screenshots are in `test-results/production-smoke.
 
 - No public Vercel URL, Vercel-hosted build, CDN headers or deployment protection was tested; complete the HTTPS checks after publishing.
 - This pass did not retest a physical webcam, mobile Safari or every browser. File-backed camera tests do not establish hardware permission behavior.
-- Public visitors have browser object detection and English OCR only. No Gemma summaries, conversations or generated study cards are claimed for the public build.
+- Compatible public visitors can opt into experimental SmolVLM summaries and conversations. Gemma and evidence-validated structured recommendations, Ling Steps and study cards remain in the local development app. No equivalent-quality claim is made.
 - Detection can miss or mislabel objects; OCR can misread text. Confidence is not an accuracy rate, and correcting a label does not retrain the model.
 - There is no offline reload/PWA cache. First-time page/model loading needs internet. Photos remain on the device; Vercel still receives normal website/asset requests and associated hosting metadata.
 - Existing local Gemma performance and limitations are unchanged; no new long benchmark was run.

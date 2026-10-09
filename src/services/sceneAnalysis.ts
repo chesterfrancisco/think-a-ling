@@ -2,7 +2,8 @@ import type { UploadedImage } from './image'
 import { ObjectDetectionService } from './objectDetection'
 import type { DetectedObject } from './objectDetection'
 import { OcrService } from './ocr'
-import { analyzeImage, OllamaError } from './ollama'
+import { analyzeImage, OllamaError, localReasoningAvailable } from './ollama'
+import { browserScene } from './browserReasoning'
 import { assembleScene } from './scene'
 import { errorMessage } from './assets'
 
@@ -50,6 +51,13 @@ export async function buildScene(
     }
     dispose()
     signal.throwIfAborted()
+    if (!localReasoningAvailable) {
+      onStatus('Interpreting the photo on this device…')
+      const scene = await browserScene(image, detections, ocrText, signal)
+      if (failures.ocr) { scene.ocr.status = 'error'; scene.ocr.error = failures.ocr }
+      if (failures.detection) scene.uncertainty.push('Object detection was unavailable: ' + failures.detection)
+      return scene
+    }
     const result = await analyzeImage(image, 'SCENE', '', {
       detections: failures.detection ? null : detections,
       ocrText: failures.ocr ? null : ocrText,

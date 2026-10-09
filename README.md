@@ -4,7 +4,9 @@
 
 Your world. Full of possibilities. Think-a-ling! helps people discover what they can understand, use, fix and improve using what's already around them. Show Ling a space, an object or some information, then work toward a practical next step. Recognition is limited to supported categories and AI can make mistakes.
 
-Built for the AppBuildersPH Local AI Hackathon 2026. MediaPipe detection and English OCR stay in the browser. Gemma 3 4B reasons through Ollama on the same computer using a loopback-only development proxy. No cloud inference API is used. Public hosting provides detection/OCR; deeper reasoning and Ling Steps require the local app.
+Built for the AppBuildersPH Local AI Hackathon 2026. MediaPipe detection and English OCR stay in the browser. Public visitors can optionally enable **experimental SmolVLM browser reasoning**: download about 374 MB of model/runtime files, then analyze on a compatible WebGPU device. Gemma 3 4B still runs through Ollama using the loopback-only development proxy. No cloud inference API is used. Structured recommendations and Ling Steps require the local Gemma app.
+
+**Public Analyze:** choose a photo → **Enable AI to analyze** → **Enable on-device AI** → wait for download and initialization → **Analyze photo**. Follow-ups reuse the saved scene without another image inference. See [actual browser-model results, compatibility and accuracy limits](docs/browser-ai-validation.md). The small model is experimental and can invent details; it is not equivalent to Gemma.
 
 **Ling Actions + Ling Steps:** contextual choices reflect the selected object, recognized text and its saved goal. Supported recommendations can become optional checklists with their original evidence and caveats. Ticks mean user-marked completion, never AI-verified physical changes. Checklists stay in memory for the current photo/session. No login or cloud storage. Ling Pockets is not implemented.
 
@@ -32,7 +34,7 @@ git push
 
 Dependencies, test results, camera recordings, `.env` files and local Vercel settings are ignored. AI assets are intentionally included so a clone can build without downloading model files again.
 
-**Milestone 4 — ready for Vercel:** see the [deployment commands, production smoke results and public-feature limitations](docs/vercel-deployment.md). The public build supports camera/photo detection and OCR, with deeper Gemma actions disabled. `npm run build` verifies all local AI assets before and after copying them to `dist/`. Deployment itself has not been performed.
+**Vercel:** see the [deployment commands, production smoke results and public-feature limitations](docs/vercel-deployment.md). The public build supports camera/photo detection, OCR and opt-in SmolVLM answers. Gemma remains local-development only. `npm run build` verifies model/runtime assets before and after copying them to `dist/`. A successful local smoke test does not verify the hosted deployment.
 
 **Milestone 3:** the Figma Make interface is now integrated, with locally hosted typography, responsive viewfinder/sheets, tappable real detection labels and all four modes connected to the shared scene. See the [integration plan](docs/milestone-3-integration-plan.md) and [actual validation results and remaining gaps](docs/milestone-3-validation.md). The AI services and local-only safeguards are preserved.
 
@@ -50,7 +52,7 @@ Dependencies, test results, camera recordings, `.env` files and local Vercel set
 
 **Object conversations + photo controls:** answers and history stay with the exact selected object; switching cancels the old object's pending question while keeping the shared scene. Same-category labels use Person 1/Person 2, etc. Ask opens an empty question field with a placeholder. Fullscreen preserves green markers unless hidden and supports opening the selected card. Progress is a moving, explicitly **estimated** percentage, held below 100 until a validated completion. Confidence is not accuracy. See the [fresh usability, performance, accuracy and security audit](docs/usability-performance-accuracy-audit.md) for measured latency, actual model errors, passing regressions, account advice and deployment limits. The prior static step percentages and marker-free fullscreen have been superseded.
 
-For **EXPLORE, FIND, FIX and IMPROVE**, see [the shared-scene and intent engine](docs/milestone-2.md). Start Ollama with `gemma3:4b`, run `npm run dev`, and choose a photo. Detection and OCR run automatically. Tap a hotspot for Ling Actions, or **Analyze photo**. Once ready, choose **Explore**, **Find**, **Fix** or **Improve**. Floating **Ask This Space** opens chat; **Ask Ling** submits questions and reuses the saved scene. **Turn into steps** makes an optional checklist from supported recommendations already in an answer. Public production builds provide browser detection/OCR only; deeper reasoning and checklists require the local app.
+For **EXPLORE, FIND, FIX and IMPROVE**, see [the shared-scene and intent engine](docs/milestone-2.md). Start Ollama with `gemma3:4b`, run `npm run dev`, and choose a photo. Detection and OCR run automatically. Tap a hotspot for Ling Actions, or **Analyze photo**. Once ready, choose **Explore**, **Find**, **Fix** or **Improve**. Floating **Ask This Space** opens chat; **Ask Ling** submits questions and reuses the saved scene. **Turn into steps** makes an optional checklist from supported recommendations already in a local Gemma answer. Public browser mode offers short experimental answers in the same modes, without validated structured recommendations or checklists.
 
 ## Run
 
@@ -80,9 +82,9 @@ Upload an image; detection and OCR run automatically. **Scan again** retries det
 | `scripts/validate-milestone1.js` | Actual browser integration checks, exported as a function accepting a Playwright Page |
 | `test-images/` | Original desk image and detection/OCR/blank fixtures |
 
-No runtime dependencies were added. MediaPipe 1.1.0 and Tesseract.js 7.0.0 were already installed. The asset set is about 72.8 MiB on disk (includes browser compatibility variants); each browser loads only the variant it selects. The detection model itself is 13,836,895 bytes. Vite copies `public/ai` into `dist/ai`.
+MediaPipe 1.1.0 and Tesseract.js 7.0.0 remain unchanged. Their asset set is about 72.8 MiB on disk (includes compatibility variants); each browser loads only the variant it selects. The detection model itself is 13,836,895 bytes. Browser reasoning adds Transformers.js 4.3.1 and about 374 MB of pinned SmolVLM/runtime assets, downloaded only after consent. Vite copies `public/ai` into `dist/ai`.
 
-`npm run build` first verifies all 17 files against `public/ai/manifest.json` and checks that installed package versions match the copied runtimes. After changing an AI package, rerun `npm run setup:ai`. A corrupt model/language file should be removed and downloaded again; the script does not silently replace existing model files.
+`npm run build` verifies the 17 detection/OCR assets and the separate `public/ai/browser-reasoning.json` manifest against file sizes, SHA-256 hashes and installed runtime versions. After changing a detection/OCR package, rerun `npm run setup:ai`. Browser model assets are prepared separately with `node scripts/prepare-browser-ai.mjs` (internet required); committed assets normally need no preparation. Large weights are split into parts below GitHub's per-file limit and assembled in the browser's dedicated model cache.
 
 ## Test without internet
 

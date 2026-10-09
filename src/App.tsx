@@ -24,13 +24,16 @@ import type { ReasoningMode } from './services/reasoning'
 import './App.css'
 import './Everyday.css'
 import './SimpleExperience.css'
-import { localReasoningAvailable } from './services/ollama'
+import { localReasoningAvailable as ollamaAvailable } from './services/ollama'
+import { stopBrowserAi, useBrowserAi } from './services/browserAi'
 
 type Result<T> = { status: 'idle' | 'loading' | 'done' | 'error'; message: string; data: T }
 const emptyDetection: Result<DetectedObject[]> = { status: 'idle', message: '', data: [] }
 const emptyOcr: Result<string> = { status: 'idle', message: '', data: '' }
 
 function App() {
+  const browserAi = useBrowserAi()
+  const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [showStory, setShowStory] = useState(() => !hasSeenStory())
   const [showSplash, setShowSplash] = useState(true)
   const [corrections, setCorrections] = useState<LabelCorrection[]>([])
@@ -76,6 +79,7 @@ function App() {
   const ocrProgress = ocr.status === 'loading' ? /recognizing text \((\d+)%\)/i.exec(ocr.message)?.[1] : undefined
 
   useEffect(() => () => {
+    stopBrowserAi()
     revision.current++
     detector.current?.dispose()
     recognizer.current?.dispose()
@@ -302,7 +306,7 @@ function App() {
       <div className="page-intro"><div><span className="eyebrow"><Sparkles size={16} /> YOUR WORLD. FULL OF POSSIBILITIES.</span>
         <h1>{image || cameraOpen ? <>Let’s find your <em>next step.</em></> : <>What can we<br /><em>figure out today?</em></>}</h1></div>
       </div>
-      {!localReasoningAvailable && <div className="runtime-strip"><ShieldCheck size={16} /><span>Objects & text work here · deeper answers need the local app</span><button onClick={() => help.current?.showModal()}>How local AI works <ArrowUpRight size={14} /></button></div>}
+      {!ollamaAvailable && <div className="runtime-strip"><ShieldCheck size={16} /><span>Objects & text in your browser · optional on-device AI answers</span><button onClick={() => help.current?.showModal()}>How local AI works <ArrowUpRight size={14} /></button></div>}
       <section ref={viewfinder} data-detection-status={detection.status} data-ocr-status={ocr.status} className={'viewfinder' + (image ? ' has-image' : '') + (cameraOpen ? ' has-camera' : '') + (panelOpen || selectedIndex !== undefined ? ' has-drawer' : '') + (selectedIndex !== undefined ? ' has-object-card' : '') + (sceneBuilding || detection.status === 'loading' ? ' is-scanning' : '')} aria-label="Your visual workspace">
         {(image || cameraOpen) && <div className="camera-top">
           <button className="back-to-start" onClick={goHome} aria-label="Back to start"><Undo2 size={18} /><span>Back</span></button>
@@ -343,7 +347,7 @@ function App() {
             <button className="add-manual-tag" disabled={placingTag} onClick={beginTag}><MapPinPlus size={17} /> Add missing tag</button>
             <button disabled={busy} onClick={() => void detect()} aria-label="Detect objects"><Focus size={17} /> Scan again</button>
             <button onClick={() => textDialog.current?.showModal()} aria-label="Read text"><ScanText size={17} /> Read text</button>
-            {!sceneSnapshot && <button className="photo-next" aria-label="Explore this photo" disabled={sceneBuilding || !localReasoningAvailable} title={!localReasoningAvailable ? 'Deeper analysis requires the local app with Ollama' : undefined} onClick={() => { setObjectFocus(undefined); setGoalRequest(undefined); openQuestion(); if (localReasoningAvailable) setAutoBuild(true) }}>Analyze photo <ArrowRight size={18} /></button>}
+            {!sceneSnapshot && <button className="photo-next" aria-label="Explore this photo" disabled={sceneBuilding} onClick={() => { setObjectFocus(undefined); setGoalRequest(undefined); openQuestion(); if (localReasoningAvailable) setAutoBuild(true) }}>{localReasoningAvailable ? 'Analyze photo' : 'Enable AI to analyze'} <ArrowRight size={18} /></button>}
           </div>
           {!!manualTags.length && <div className="manual-tag-list" aria-label="Your photo tags"><span>Added by you · {manualTags.length} {manualTags.length === 1 ? 'pin' : 'pins'}</span>{manualTags.map(tag => <button key={tag.id} onClick={() => editTag(tag)}>{manualTagName(tag, manualTags, detection.data, corrections)}</button>)}<small>Photo annotations, not AI detections. Tap to edit or remove.</small></div>}
           {detection.status === 'error' && <p role="alert" className="error">{detection.message} Try scanning again.</p>}
@@ -402,7 +406,7 @@ function App() {
       {ocr.status === 'idle' && <p>Choose a photo to read its text.</p>}
       <button disabled={!image || busy} onClick={() => void recognize()}>Read again</button>
       {ocr.data.trim() && <button disabled={!localReasoningAvailable} onClick={() => { textDialog.current?.close(); openQuestion('Explain the text in this photo.') }}>Explain this text</button>}
-      {ocr.data.trim() && !localReasoningAvailable && <p className="context-note">Reading text works here. Explanations and study questions need the local app with Ollama.</p>}
+      {ocr.data.trim() && !localReasoningAvailable && <p className="context-note">Reading text works here. Enable on-device AI in Ask This Space for experimental explanations. Grounded study cards require the local app with Ollama.</p>}
       <p className="context-note">Text recognition can make mistakes. Compare important details with your photo.</p>
     </dialog>
     <dialog ref={about} className="help-dialog about-dialog" aria-labelledby="about-title">
@@ -413,7 +417,7 @@ function App() {
       <p>Created by <strong>Chester Francisco</strong> as an <strong>AppBuildersPH Local AI Hackathon 2026</strong> entry, developed within 24 hours using local AI. This is a hackathon prototype, with room to learn and improve.</p>
       <h3>Built with local AI</h3>
       <p>React, Vite, and TypeScript power the interface. MediaPipe EfficientDet-Lite0 detects objects and Tesseract.js reads text in your browser. In the local development app, Gemma 3 4B through Ollama provides deeper reasoning on the same computer.</p>
-      <p>The public website supports browser detection and text reading; it cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI, accounts, or cloud photo storage are used.</p>
+      <p>The public website supports browser detection, text reading, and optional experimental SmolVLM 500M answers through Transformers.js and WebGPU. It cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI, accounts, or cloud photo storage are used.</p>
       <button className="primary" onClick={() => { about.current?.close(); help.current?.showModal() }}>How to use Think-a-ling <ArrowUpRight size={18} /></button>
     </dialog>
     <dialog ref={help} className="help-dialog navigation-help" aria-labelledby="help-title">
@@ -423,9 +427,9 @@ function App() {
       <p>Select Change photo to choose another image without going back home. Use the eye button to hide or show markers, and the fullscreen button to see the whole photo. Ask This Space opens or closes Ling’s question panel.</p>
       <p>Missed someone or something? Select Add missing tag, tap its location, and enter a name. Lilac pins are added by you, not predicted by AI. Tap a pin to rename or remove it. Tags stay with the current photo only and aren’t used as AI evidence or for training. To rename a green marker, open its object card and select Correct this label.</p>
       <p>Green boxes and confidence scores come from MediaPipe. Text comes from Tesseract. Gemma descriptions have no measured locations. Check the evidence and uncertainty beside every response.</p>
-      <p>Detection and OCR run in your browser. Deeper answers use Gemma through Ollama on the computer running the local development app. They can take a minute or more on a CPU. A public website has no connection to the developer’s local model; visitors get browser detection and OCR, not Gemma reasoning. This is not a safety or medical assessment.</p>
-      <p>Use live camera for periodic on-device detection. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. This website detects objects and reads text; deeper scene interpretation needs the local app. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device. Voice input is not included.</p>
-      <p>Internet is needed to load this website and its model files. Once detection and text reading have initialized, you can keep using them without internet while this page stays open. Offline reload or installation is not supported. Your photos are processed on your device and are not uploaded; the hosting provider receives normal page and asset requests.</p>
+      <p>Detection and OCR run in your browser. On the public site, open Ask This Space and select Enable on-device AI to download approximately 374 MB of model files from this site. Experimental SmolVLM answers then run on your device using WebGPU. It can miss or invent details. Follow-up questions reuse the saved description and recognized text. Structured action checklists and grounded study cards remain in the local app with Gemma through Ollama. Neither mode is a safety or medical assessment.</p>
+      <p>Use live camera for periodic on-device detection. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. Enable the optional browser model for a short interpretation. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device. Voice input is not included.</p>
+      <p>Internet is needed to load this website and its model files. Once detection and text reading have initialized, you can keep using them without internet while this page stays open. Offline reload or installation is not supported. The optional browser model is cached after you enable it; you can remove its saved cache in the AI panel. Browsers may clear cached files. Your photos are processed on your device and are not uploaded; the hosting provider receives normal page and asset requests.</p>
       <button className="primary" onClick={() => help.current?.close()}>Let’s explore <ArrowUpRight size={18} /></button>
     </dialog>
   </div>

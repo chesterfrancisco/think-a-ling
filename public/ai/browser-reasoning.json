@@ -1,0 +1,92 @@
+{
+  "model": "HuggingFaceTB/SmolVLM-500M-Instruct",
+  "revision": "a7da5b986cb59b408707209984f360a5f4ad7e47",
+  "license": "Apache-2.0",
+  "packages": {
+    "@huggingface/transformers": "4.3.1",
+    "onnxruntime-web": "1.31.0-dev.20260914-8d85527a0"
+  },
+  "assets": [
+    {
+      "file": "smolvlm500/config.json",
+      "bytes": 7339,
+      "sha256": "daacbbca6af3c34e50466c72aed2df4553a08084f6a0551d4ae420a241cb66c6"
+    },
+    {
+      "file": "smolvlm500/generation_config.json",
+      "bytes": 136,
+      "sha256": "067a2a54e5f87162ecac6e0e911cc4665fc8f7f3324794ecbac0f76badb56636"
+    },
+    {
+      "file": "smolvlm500/preprocessor_config.json",
+      "bytes": 486,
+      "sha256": "6cb6e36d6fcb88ca1502c4a26750715dc3e7dedddc9a8f17b27d8d167d1457e7"
+    },
+    {
+      "file": "smolvlm500/processor_config.json",
+      "bytes": 68,
+      "sha256": "e7bff42da73ae9eec9042ef20e066e11f1ee20f025358ff79131e3c0fb549b46"
+    },
+    {
+      "file": "smolvlm500/tokenizer.json",
+      "bytes": 3548256,
+      "sha256": "5ece781dc8d2b2f3e2f289ca0ae50b17cfc27dd27bfe7971bb8241e0b964331a"
+    },
+    {
+      "file": "smolvlm500/tokenizer_config.json",
+      "bytes": 28249,
+      "sha256": "36c6fd44d07d10fd8180ee6b46dcccf69fb7c06753968ff0d7e17b8bfe17b777"
+    },
+    {
+      "file": "smolvlm500/special_tokens_map.json",
+      "bytes": 1069,
+      "sha256": "aa0ff906077086dfa9734a7f97f68c825877a48f9468807be65504495cdeef09"
+    },
+    {
+      "file": "smolvlm500/added_tokens.json",
+      "bytes": 4739,
+      "sha256": "74135b8664b56088c0006f1c8e848d79a8eba003411f72ebf1dc2ee96227be3a"
+    },
+    {
+      "file": "smolvlm500/chat_template.json",
+      "bytes": 429,
+      "sha256": "a68ad1a42681ae44eacd109ff8dd56a840f761c03d72f4ff4c515d092f882168"
+    },
+    {
+      "file": "smolvlm500/README.md",
+      "bytes": 9918,
+      "sha256": "8465c1a46b0db5d5d0d0945df04032d1b405bb2fa12cdab3da1652bd75fca4b9"
+    },
+    {
+      "file": "smolvlm500/onnx/embed_tokens_quantized.onnx",
+      "bytes": 47309344,
+      "sha256": "f5f14887bf9b756d9fff2e412d474f0b5403e91f33b23460c9411f0ca54d945b"
+    },
+    {
+      "file": "smolvlm500/onnx/vision_encoder_q4.onnx",
+      "bytes": 66734107,
+      "sha256": "179812d5b1315edbe3e7164ea3d847c52723692e83ac9c770a5234962663fcad"
+    },
+    {
+      "file": "smolvlm500/onnx/decoder_model_merged_q4.onnx",
+      "bytes": 229119140,
+      "sha256": "6d64c0fdce1c3515c40a08ff8e398bfbc0b2e961ae46d1b84b91e6a7b269b9d1",
+      "parts": [
+        "smolvlm500/onnx/decoder_model_merged_q4.onnx.part0",
+        "smolvlm500/onnx/decoder_model_merged_q4.onnx.part1",
+        "smolvlm500/onnx/decoder_model_merged_q4.onnx.part2",
+        "smolvlm500/onnx/decoder_model_merged_q4.onnx.part3"
+      ]
+    },
+    {
+      "file": "transformers/ort-wasm-simd-threaded.asyncify.mjs",
+      "bytes": 53057,
+      "sha256": "0966b6105cd936744498aa60df7a22cbd47af3374dbc64a9ab561c08a71e3611"
+    },
+    {
+      "file": "transformers/ort-wasm-simd-threaded.asyncify.wasm",
+      "bytes": 26861777,
+      "sha256": "49871f5a4409519797e127440868a6d1923339d9185907f301a5b2a1d90af082"
+    }
+  ]
+}
