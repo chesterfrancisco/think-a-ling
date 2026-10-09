@@ -6,7 +6,7 @@
 .account-dialog input, .account-dialog select, .text-workbench input, .reasoning-panel select { width: 100%; padding: 12px; border: 1px solid #c1b6d0; border-radius: 10px; background: white; color: #30273c; margin: 6px 0 12px; font: inherit; }
 .account-dialog label, .edit-controls label { display: block; margin: 12px 0; }
 .account-dialog button:not(.sheet-close), .offline-setup button, .photo-editor button:not(.sheet-close), .text-workbench button, .account-history button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 12px; padding: 10px 14px; margin: 8px 8px 8px 0; background: #e8dff6; color: #403050; }
-.everyday-app .danger-action, .everyday-app .quick-progress button { background: #a92335; color: #fff; border: 1px solid #8e1e2d; }
+.everyday-app button.danger-action, .everyday-app .quick-progress button { background: #a92335; color: #fff; border: 1px solid #8e1e2d; }
 .error, .cancel-notice { color: #891e2c; background: #fff0f1; border-left: 4px solid #b12939; padding: 12px; border-radius: 8px; }
 .success-notice, .everyday-app .answer-ready { color: #275c22; background: #edf7e5; padding: 9px; border-radius: 8px; }
 .warning-notice { color: #694a0b; background: #fff4d2; border-left: 4px solid #b48617; border-radius: 8px; padding: 12px; }

@@ -84,6 +84,8 @@ Use the existing Think-a-ling project and `./` directory. The command publishes.
 
 ## Validation and limits
 
+Commit `9e4df8e` reached Ready on the production Vercel alias. The live HTTPS smoke passed: configured account form and CSP, real study-example OCR, complete hash-verified offline pack, full offline reload with four new-image detections/OCR, and a real HTTP 404 with Ling. No page errors were reported. The public test is reproducible with `node scripts/run-browser-check.mjs validate-hosted <playwright-path>`.
+
 - Build and lint pass; **53 unit tests** pass. Configured account SDK adds a >500 KB main-chunk warning; this is a remaining startup-performance opportunity.
 - Production smoke: actual four-animal detections, real English OCR, boxes/hotspots at 1280/390/320px; file-backed camera live fullscreen, capture/review/retake and track cleanup; no unexpected external requests, image uploads or page errors.
 - Resilience: full offline reload, new-image detection/OCR, cached example study flow, text search/recall/save/revisit, crop/rotate/rescan, HTTP 404 fallback and persisted accessibility preference pass. Axe reports zero violations across four tested screens.

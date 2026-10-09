@@ -39,7 +39,7 @@ Real-user acceptance procedure:
 5. Sign out while a history request is pending; A's results must not appear for B. Test expiry and loss of internet, then retry. Local saves must remain available.
 6. Delete a synced test discovery and confirm the account copy disappears on the other device after refresh; its local copies remain. With a disposable account, test explicit account deletion and denial of subsequent access.
 
-No valid user password, access token, email delivery or authenticated cross-device transaction was available to the agent. The app is connected locally, but those checks remain unverified. The public environment settings are configured; the new code still needs to be deployed and checked.
+No valid user password, access token, email delivery or authenticated cross-device transaction was available to the agent. The app is connected locally, but those checks remain unverified. Production environment settings are configured. Commit `9e4df8e` was deployed to https://think-a-ling.vercel.app/ and its hosted smoke passed: configured account form, actual OCR, hash-verified offline pack, full offline reload with a new image and HTTP 404 fallback. This does not replace successful real-user account acceptance.
 
 ## A focused two-minute demonstration
 
@@ -115,4 +115,4 @@ This lists the material risks identified in review, not every possible future bu
 
 The screenshots allow secondary cloud services while meaningful inference runs locally. The implemented architecture fits that technical direction. Build-time eligibility, disclosure completeness and final scoring are organizer decisions; not all criteria can be certified from code. Disclose MediaPipe/EfficientDet, Tesseract English data, Transformers.js/SmolVLM/ONNX/WebGPU, Ollama/Gemma, browser speech, Supabase, React/Vite/Vercel and AI-assisted development. Do not present rule-based OCR retrieval or recall cues as generative AI.
 
-Local evidence: `test-results/validate-resilience.json`, `validate-offline-reasoning.json`, `validate-account-ui.json`, `validate-account-live.json`, `validate-pockets-layout.json`, `validate-voice-controls.json`, `production-smoke.json`, `security-audit.json`. These artifacts are excluded from Git/deployment because they may contain test inputs or temporary session details. See [deployment commands](vercel-deployment.md).
+Local evidence: `test-results/validate-hosted.json`, `validate-resilience.json`, `validate-offline-reasoning.json`, `validate-account-ui.json`, `validate-account-live.json`, `validate-pockets-layout.json`, `validate-voice-controls.json`, `production-smoke.json`, `security-audit.json`. These artifacts are excluded from Git/deployment because they may contain test inputs or temporary session details. See [deployment commands](vercel-deployment.md).

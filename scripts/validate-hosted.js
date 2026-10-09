@@ -19,7 +19,7 @@ export default async function validateHosted(page) {
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)
-    await tab.keyboard.press('Escape')
+    await tab.getByRole('button', { name: 'Close text', exact: true }).click()
     await tab.locator('.offline-setup summary').click()
     await tab.waitForFunction(() => !!navigator.serviceWorker.controller)
     await tab.getByRole('button', { name: /Prepare for offline/ }).click()
