@@ -30,3 +30,33 @@ Useful local evidence: `test-results/validate-product-experience.json`, `ling-st
 Public Vercel still cannot run the laptop's Ollama. Generated answers and Ling Steps need the local development app; public users have browser detection/OCR. Evidence references make recommendations traceable, not factually verified. The existing model can misidentify or miss objects. Offline reload is not supported.
 
 Ling Pockets was intentionally left as a stretch goal. Checklists do not persist across reloads, and there is no automatic verification of physical work. The project folder and original Figma export folder have not been renamed, to keep the running development environment and references working.
+
+## Photo interaction follow-up — 2026-10-09
+
+- Changed the question panel greeting to **Hello, thinker!**.
+- Navbar help now opens **About Think-a-ling**, including product purpose, Chester Francisco, the user-provided 24-hour hackathon origin, and the actual technology stack. The photo toolbar help opens separate navigation instructions with justified paragraphs and accurate local/public/offline limitations. Toolbar help is visible on mobile too.
+- The footer now reads **Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026**. Ling gently floats and waves on the dashboard, respecting reduced-motion preferences.
+- **Change photo** visibly opens the file picker directly. Opening the picker preserves the current photo until a replacement is selected.
+- **Add missing tag** lets users place a pin, name it, rename it or delete it. Pointer/touch placement and keyboard arrows + Enter are supported. Coordinates are image-relative points, so pins follow responsive resizing and fullscreen. They follow the same marker visibility control as detections.
+- Lilac pins are explicitly **Added by you**. They are annotations, not AI detections: no invented bounding rectangle, confidence or observed evidence. They remain separate from detector output and the shared AI scene. Tagging does not retrain the detector or improve measured recognition accuracy. User pins are not supplied to Gemma as evidence. Existing corrections to detected labels still use their established unverified-user-evidence path.
+- Tags survive a rescan of the same photo but clear on replacing the photo, returning home or reloading. No storage, uploads, accounts or new dependencies.
+
+Validation: build and lint passed; **44 unit tests passed**. Source and built copies of all **17 AI assets** passed verification. The new `validate-photo-refinements` browser suite passed against the development app and production preview: separate dialogs, greeting/footer, animation/reduced motion, placement/edit/delete, invalid-label handling, repeated-label numbering, keyboard operation, resize/fullscreen alignment, marker visibility, rescan retention, direct replacement and empty-detection annotation. All exercised interactions made zero external or non-read requests and produced zero page errors.
+
+Also reran successfully: `validate-product-experience`, `validate-object-context`, `validate-milestone1`, `test:production`, and `audit-local-security.mjs`. Production used real MediaPipe/OCR, a file-backed camera for capture/review/retake/cleanup, and new-image inference after networking was disabled. The reasoning UI regressions used recorded real Gemma responses, not fresh inference; no new model accuracy or physical-camera claim is made. These checks ran in headless Chrome 153, with production card checks at 1280/390/320px. Public Gemma remains unavailable by design; no deployment was performed by these local smoke tests.
+
+Reproduce the focused checks with an existing Playwright installation (no application dependency needed):
+
+```powershell
+npm.cmd run build
+npm.cmd run lint
+npm.cmd run test
+node scripts/run-browser-check.mjs validate-photo-refinements C:/path/to/playwright/index.mjs
+# With npm run preview already serving the production build on port 4173:
+$env:THINK_TEST_ORIGIN = 'http://127.0.0.1:4173'
+node scripts/run-browser-check.mjs validate-photo-refinements C:/path/to/playwright/index.mjs
+Remove-Item Env:THINK_TEST_ORIGIN
+npm.cmd run test:production -- C:/path/to/playwright/index.mjs
+```
+
+Local reports/screenshots are under ignored `test-results/`; the focused report records its tested origin. Public fixture images, rather than the user's attached group/email photographs, were used for regression checks.

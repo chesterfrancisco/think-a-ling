@@ -3,6 +3,8 @@ import { ImagePreview } from './components/ImagePreview'
 import { ReasoningPanel } from './components/ReasoningPanel'
 import { LiveCamera } from './components/LiveCamera'
 import { ObjectCard } from './components/ObjectCard'
+import { ManualTagEditor } from './components/ManualTagEditor'
+import { manualTagName, type ManualTag } from './services/manualTags'
 import type { LabelCorrection, SceneAnalysis, SceneTurn } from './types/scene'
 import { discoveryCategory, discoveryKey } from './components/objectDiscovery'
 import { errorMessage } from './services/assets'
@@ -11,7 +13,7 @@ import type { UploadedImage } from './services/image'
 import { ObjectDetectionService } from './services/objectDetection'
 import type { DetectedObject } from './services/objectDetection'
 import { OcrService } from './services/ocr'
-import { ArrowUpRight, ArrowDown, Camera, Compass, Eye, EyeOff, Focus, HelpCircle, ImageUp, Maximize, Search, ShieldCheck, Sparkles, Wrench, X, ScanText, ArrowRight, Undo2 } from 'lucide-react'
+import { ArrowUpRight, ArrowDown, Camera, Compass, Eye, EyeOff, Focus, HelpCircle, ImageUp, Maximize, Search, ShieldCheck, Sparkles, Wrench, X, ScanText, ArrowRight, Undo2, MapPinPlus } from 'lucide-react'
 import { Brand } from './components/Brand'
 import { Mascot } from './components/Mascot'
 import { LingStory } from './components/LingStory'
@@ -32,6 +34,9 @@ function App() {
   const [showStory, setShowStory] = useState(() => !hasSeenStory())
   const [showSplash, setShowSplash] = useState(true)
   const [corrections, setCorrections] = useState<LabelCorrection[]>([])
+  const [manualTags, setManualTags] = useState<ManualTag[]>([])
+  const [placingTag, setPlacingTag] = useState(false)
+  const [tagDraft, setTagDraft] = useState<ManualTag>()
   const [image, setImage] = useState<UploadedImage>()
   const [imageError, setImageError] = useState('')
   const [loadingImage, setLoadingImage] = useState(false)
@@ -56,6 +61,7 @@ function App() {
   const fileInput = useRef<HTMLInputElement>(null)
   const viewfinder = useRef<HTMLElement>(null)
   const help = useRef<HTMLDialogElement>(null)
+  const about = useRef<HTMLDialogElement>(null)
   const textDialog = useRef<HTMLDialogElement>(null)
   const chatPanel = useRef<HTMLElement>(null)
   const photoFrame = useRef<HTMLDivElement>(null)
@@ -98,6 +104,7 @@ function App() {
     setMarkersVisible(true)
     setDismissedSummaryId(undefined)
     setCorrections([])
+    setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
     setAutoBuild(captured && localReasoningAvailable)
@@ -186,6 +193,7 @@ function App() {
     setObjectFocus(undefined)
     setMarkersVisible(true)
     setCorrections([])
+    setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
     setSelectedIndex(undefined)
@@ -211,6 +219,7 @@ function App() {
     setLoadingImage(false)
     setSceneBuilding(false)
     setCorrections([])
+    setManualTags([]); setPlacingTag(false); setTagDraft(undefined)
     setSceneSnapshot(undefined)
     setObjectAnswers({})
     setSelectedIndex(undefined)
@@ -244,6 +253,25 @@ function App() {
     setPanelOpen(false)
   }
 
+  function editTag(tag: ManualTag) {
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {})
+    pictureDialog.current?.close()
+    setTagDraft(tag)
+  }
+
+  function finishTagEdit() {
+    setTagDraft(undefined)
+    requestAnimationFrame(() => viewfinder.current?.querySelector<HTMLButtonElement>('.add-manual-tag')?.focus({ preventScroll: true }))
+  }
+
+  function beginTag() {
+    setMarkersVisible(true)
+    setSelectedIndex(undefined)
+    setPanelOpen(false)
+    setPlacingTag(true)
+    requestAnimationFrame(() => photoFrame.current?.scrollIntoView({ block: 'center', behavior: 'instant' }))
+  }
+
   function correctLabel(detected: DetectedObject, value: string | null) {
     const label = value === null ? null : cleanLabel(value)
     setCorrections(previous => {
@@ -267,7 +295,7 @@ function App() {
       <button className="brand-button" aria-label="Think-a-ling home" onClick={goHome}><Brand /></button>
       <span className="header-tagline">A little help. A whole new perspective.</span>
       <div className="header-right">
-        <button className="help-button" onClick={() => help.current?.showModal()} aria-label="How it works"><HelpCircle size={21} /></button>
+        <button className="help-button" onClick={() => about.current?.showModal()} aria-label="About Think-a-ling"><HelpCircle size={21} /></button>
       </div>
     </header>
     <main>
@@ -289,7 +317,8 @@ function App() {
         {cameraOpen && <LiveCamera markersVisible={markersVisible} processing={loadingImage} onClose={goHome} onCapture={(file, object) => { if (object) setMode('EXPLORE'); void selectImage(file, true, object) }} />}
         <div ref={photoFrame} className="image-stage" hidden={cameraOpen}>
           {image && <div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Exit fullscreen photo" onClick={() => void document.exitFullscreen()}><X size={21} /> Close</button></div>}
-          {image ? <ImagePreview image={image} detections={detection.data} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject} /> : <div className="welcome">
+          {image ? <ImagePreview image={image} detections={detection.data} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
+            manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <div className="welcome">
             <div className="welcome-copy"><span className="welcome-number">01 / START WITH A PHOTO</span>
             <h2>Start with<br />what’s here<span>.</span></h2>
             <p>Point your camera or choose a photo.<br />Start with the objects and words in front of you.</p>
@@ -307,12 +336,16 @@ function App() {
           {viewMessage && <p role="status">{viewMessage}</p>}
         </div>
         {image && <div className="photo-actions">
+          {placingTag && <div className="tag-placement-help" role="status"><p id="tag-placement-help">Tap the missed person or object, then give it a name. Keyboard: move the pin with arrow keys, then press Enter.</p><button onClick={() => setPlacingTag(false)}>Cancel tagging</button></div>}
           {detection.status === 'loading' || ocr.status === 'loading' ? <div className="quick-progress" role="status"><span>{ocrProgress === undefined ? 'Noticing objects and reading text…' : `Reading text · ${ocrProgress}%`}</span>{ocrProgress !== undefined && <progress aria-label="Reading text" value={Number(ocrProgress)} max={100} />}<button onClick={cancelQuickScan}>Cancel scan</button></div> : <span className="photo-hint">{detection.data.length ? 'Tap a green dot to explore.' : localReasoningAvailable ? 'No objects found. You can still read text or ask about the photo.' : 'No objects found. Try a clearer photo, or read its text.'}</span>}
           <div className="photo-buttons">
+            <button disabled={loadingImage} className="change-photo" onClick={() => fileInput.current?.click()}><ImageUp size={17} /> Change photo</button>
+            <button className="add-manual-tag" disabled={placingTag} onClick={beginTag}><MapPinPlus size={17} /> Add missing tag</button>
             <button disabled={busy} onClick={() => void detect()} aria-label="Detect objects"><Focus size={17} /> Scan again</button>
             <button onClick={() => textDialog.current?.showModal()} aria-label="Read text"><ScanText size={17} /> Read text</button>
             {!sceneSnapshot && <button className="photo-next" aria-label="Explore this photo" disabled={sceneBuilding || !localReasoningAvailable} title={!localReasoningAvailable ? 'Deeper analysis requires the local app with Ollama' : undefined} onClick={() => { setObjectFocus(undefined); setGoalRequest(undefined); openQuestion(); if (localReasoningAvailable) setAutoBuild(true) }}>Analyze photo <ArrowRight size={18} /></button>}
           </div>
+          {!!manualTags.length && <div className="manual-tag-list" aria-label="Your photo tags"><span>Added by you · {manualTags.length} {manualTags.length === 1 ? 'pin' : 'pins'}</span>{manualTags.map(tag => <button key={tag.id} onClick={() => editTag(tag)}>{manualTagName(tag, manualTags, detection.data, corrections)}</button>)}<small>Photo annotations, not AI detections. Tap to edit or remove.</small></div>}
           {detection.status === 'error' && <p role="alert" className="error">{detection.message} Try scanning again.</p>}
           {sceneBuilding && !panelOpen && <button className="thinking-link" onClick={() => openQuestion()}>Understanding your photo... View progress</button>}
         </div>}
@@ -353,10 +386,13 @@ function App() {
       </nav>}
       {image && <button className="floating-ask" aria-label={panelOpen ? 'Close chat' : 'Ask This Space'} aria-expanded={panelOpen} aria-controls="ask-panel" onClick={() => { if (panelOpen) setPanelOpen(false); else openQuestion() }}><Mascot thinking={sceneBuilding} /><span>{panelOpen ? 'Close chat' : 'Ask This Space'}</span>{panelOpen ? <X size={19} /> : <ArrowUpRight size={19} />}</button>}
       {summaryNotice && sceneSnapshot && <div className="summary-ready-notice" role="status"><button onClick={() => { setDismissedSummaryId(sceneSnapshot.id); summary.current?.focus({ preventScroll: true }); summary.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }) }}><ArrowDown size={20} /><span><strong>HERE'S THE PICTURE</strong><small>Your photo summary is ready. View below.</small></span></button><button aria-label="Dismiss summary notice" onClick={() => setDismissedSummaryId(sceneSnapshot.id)}><X size={17} /></button></div>}
-      <footer><span><span className="privacy-dot" /> Curiosity on. Privacy first. Images stay on your device.</span></footer>
+      <footer><span>Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026</span></footer>
       {!image && !cameraOpen && <button className="replay-story" onClick={() => setShowStory(true)}>Meet Ling again</button>}
     </main>
-    <dialog ref={pictureDialog} className="picture-dialog" aria-label="Fullscreen photo" onClose={() => setPictureOpen(false)}><div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Close fullscreen photo" onClick={() => pictureDialog.current?.close()}><X size={22} /> Close</button></div>{pictureOpen && image && <ImagePreview image={image} detections={detection.data} corrections={corrections} markersVisible={markersVisible} selectedIndex={selectedIndex} onObjectSelect={selectObject} />}</dialog>
+    <dialog ref={pictureDialog} className="picture-dialog" aria-label="Fullscreen photo" onClose={() => setPictureOpen(false)}><div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Close fullscreen photo" onClick={() => pictureDialog.current?.close()}><X size={22} /> Close</button></div>{pictureOpen && image && <ImagePreview image={image} detections={detection.data} corrections={corrections} markersVisible={markersVisible} selectedIndex={selectedIndex} onObjectSelect={selectObject} manualTags={manualTags} onTagSelect={editTag} />}</dialog>
+    {tagDraft && <ManualTagEditor key={tagDraft.id} tag={tagDraft} existing={manualTags.some(tag => tag.id === tagDraft.id)} onClose={finishTagEdit}
+      onSave={tag => { setManualTags(previous => previous.some(item => item.id === tag.id) ? previous.map(item => item.id === tag.id ? tag : item) : [...previous, tag]); finishTagEdit() }}
+      onDelete={() => { setManualTags(previous => previous.filter(tag => tag.id !== tagDraft.id)); finishTagEdit() }} />}
     <dialog ref={textDialog} className="help-dialog text-dialog" aria-labelledby="text-title">
       <button className="sheet-close" onClick={() => textDialog.current?.close()} aria-label="Close text"><X size={20} /></button>
       <h2 id="text-title">Text in your photo</h2>
@@ -369,10 +405,23 @@ function App() {
       {ocr.data.trim() && !localReasoningAvailable && <p className="context-note">Reading text works here. Explanations and study questions need the local app with Ollama.</p>}
       <p className="context-note">Text recognition can make mistakes. Compare important details with your photo.</p>
     </dialog>
-    <dialog ref={help} className="help-dialog" aria-labelledby="help-title">
+    <dialog ref={about} className="help-dialog about-dialog" aria-labelledby="about-title">
+      <button className="sheet-close" onClick={() => about.current?.close()} aria-label="Close about"><X size={20} /></button><Brand />
+      <h2 id="about-title">Your world. Full of possibilities.</h2>
+      <p><strong>Point at anything. Know what to do.</strong> Think-a-ling! is an Everyday Action Intelligence app: discover what you can understand, use, fix, and improve with what’s around you.</p>
+      <p>Meet Ling, your guide from a little discovery to a practical next step. Explore, Find, Fix, Improve, or Ask This Space about what you’re trying to accomplish.</p>
+      <p>Created by <strong>Chester Francisco</strong> as an <strong>AppBuildersPH Local AI Hackathon 2026</strong> entry, developed within 24 hours using local AI. This is a hackathon prototype, with room to learn and improve.</p>
+      <h3>Built with local AI</h3>
+      <p>React, Vite, and TypeScript power the interface. MediaPipe EfficientDet-Lite0 detects objects and Tesseract.js reads text in your browser. In the local development app, Gemma 3 4B through Ollama provides deeper reasoning on the same computer.</p>
+      <p>The public website supports browser detection and text reading; it cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI, accounts, or cloud photo storage are used.</p>
+      <button className="primary" onClick={() => { about.current?.close(); help.current?.showModal() }}>How to use Think-a-ling <ArrowUpRight size={18} /></button>
+    </dialog>
+    <dialog ref={help} className="help-dialog navigation-help" aria-labelledby="help-title">
       <button className="sheet-close" onClick={() => help.current?.close()} aria-label="Close help"><X size={20} /></button><Brand />
       <h2 id="help-title">Your everyday, reimagined.</h2>
       <p>Choose a photo or capture one. Objects and readable text appear automatically. Tap a green dot to inspect an object. In the local development app, you can also ask questions and reuse your photo’s saved understanding.</p>
+      <p>Select Change photo to choose another image without going back home. Use the eye button to hide or show markers, and the fullscreen button to see the whole photo. Ask This Space opens or closes Ling’s question panel.</p>
+      <p>Missed someone or something? Select Add missing tag, tap its location, and enter a name. Lilac pins are added by you, not predicted by AI. Tap a pin to rename or remove it. Tags stay with the current photo only and aren’t used as AI evidence or for training. To rename a green marker, open its object card and select Correct this label.</p>
       <p>Green boxes and confidence scores come from MediaPipe. Text comes from Tesseract. Gemma descriptions have no measured locations. Check the evidence and uncertainty beside every response.</p>
       <p>Detection and OCR run in your browser. Deeper answers use Gemma through Ollama on the computer running the local development app. They can take a minute or more on a CPU. A public website has no connection to the developer’s local model; visitors get browser detection and OCR, not Gemma reasoning. This is not a safety or medical assessment.</p>
       <p>Use live camera for periodic on-device detection. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. This website detects objects and reads text; deeper scene interpretation needs the local app. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device. Voice input is not included.</p>

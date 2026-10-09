@@ -256,7 +256,7 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
   const questionToSend = goal.trim() || (retryingQuestion ? lastQuestion : '')
   const suggestions = correctedScene ? sceneSuggestions(objectFocus ? { ...correctedScene, objects: focusedObject ? [focusedObject] : [], visibleIssues: [], ocr: { ...correctedScene.ocr, text: '' } } : correctedScene, mode) : []
   return <section className="panel reasoning-panel" aria-labelledby="reasoning-title" aria-busy={status === 'loading'} data-scene-id={scene?.id}>
-    <div className="ask-heading"><Mascot thinking={status === 'loading'} /><div><span className="sheet-kicker">A LITTLE HELP FROM LING</span><h2 id="reasoning-title">Hello, possibilities.</h2></div></div>
+    <div className="ask-heading"><Mascot thinking={status === 'loading'} /><div><span className="sheet-kicker">A LITTLE HELP FROM LING</span><h2 id="reasoning-title">Hello, thinker!</h2></div></div>
     <div className="selected-intent" data-mode={mode} role="status"><span className="selected-intent-dot" /><div><strong>{intentPresentation[mode].label}</strong><span>{intentPresentation[mode].hint}</span></div></div>
     {objectFocus && <p className="object-chat-context">About <strong>{objectLabel ?? objectFocus.label}</strong><span>Answers stay with this selected object.</span></p>}
     {!localReasoningAvailable && <p className="local-notice">You can explore objects and read text here. Deeper answers need the local app with Ollama running on your computer.</p>}
