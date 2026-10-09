@@ -34,7 +34,9 @@ import { useAnswerLanguage } from './services/preferences'
 import { detectionDismissed } from './services/dismissedDetections'
 import { PhotoEditor } from './components/PhotoEditor'
 import { TextWorkbench } from './components/TextWorkbench'
+import { HomeDashboard } from './components/HomeDashboard'
 import './Resilience.css'
+import './Dashboard.css'
 
 type Result<T> = { status: 'idle' | 'loading' | 'done' | 'error'; message: string; data: T }
 const emptyDetection: Result<DetectedObject[]> = { status: 'idle', message: '', data: [] }
@@ -365,9 +367,10 @@ function App() {
     <a className="skip-link" href="#main-workspace">Skip to workspace</a>
     <main id="main-workspace" tabIndex={-1}>
       <div className="page-intro"><div><span className="eyebrow"><Sparkles size={16} /> YOUR WORLD. FULL OF POSSIBILITIES.</span>
-        <h1>{image || cameraOpen ? <>Let’s find your <em>next step.</em></> : <>What can we <em>figure out today?</em></>}</h1></div>
+        <h1>{image || cameraOpen ? <>Let’s find your <em>next step.</em></> : <>What can we <em>figure out</em> today?</>}</h1>
+        {!image && !cameraOpen && <p className="dashboard-subtitle">Point your camera or choose a photo. Let’s find a little possibility.</p>}</div>
       </div>
-      {!ollamaAvailable && <div className="runtime-strip"><ShieldCheck size={16} /><span>Objects & text in your browser · optional on-device AI answers</span><button onClick={() => help.current?.showModal()}>How local AI works <ArrowUpRight size={14} /></button></div>}
+      {!ollamaAvailable && (image || cameraOpen) && <div className="runtime-strip"><ShieldCheck size={16} /><span>Objects & text in your browser · optional on-device AI answers</span><button onClick={() => help.current?.showModal()}>How local AI works <ArrowUpRight size={14} /></button></div>}
       <section ref={viewfinder} data-detection-status={detection.status} data-ocr-status={ocr.status} className={'viewfinder' + (image ? ' has-image' : '') + (cameraOpen ? ' has-camera' : '') + (cameraOpen && cameraFill ? ' camera-fill' : '') + (panelOpen || selectedIndex !== undefined ? ' has-drawer' : '') + (selectedIndex !== undefined ? ' has-object-card' : '') + (sceneBuilding || detection.status === 'loading' ? ' is-scanning' : '')} aria-label="Your visual workspace">
         {(image || cameraOpen) && <div className="camera-top">
           <button className="back-to-start" onClick={goHome} aria-label="Back to start"><Undo2 size={18} /><span>Back</span></button>
@@ -385,23 +388,7 @@ function App() {
         <div ref={photoFrame} className="image-stage" hidden={cameraOpen}>
           {image && <div className="fullscreen-tools"><button aria-label={markersVisible ? 'Hide fullscreen markers' : 'Show fullscreen markers'} onClick={() => setMarkersVisible(value => !value)}>{markersVisible ? <Eye size={21} /> : <EyeOff size={21} />}{markersVisible ? 'Hide markers' : 'Show markers'}</button><button aria-label="Exit fullscreen photo" onClick={() => void document.exitFullscreen()}><X size={21} /> Close</button></div>}
           {image ? <ImagePreview image={image} detections={detection.data} dismissed={dismissedTags} markersVisible={markersVisible} corrections={corrections} selectedIndex={selectedIndex} onObjectSelect={selectObject}
-            manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <div className="welcome">
-            <div className="welcome-copy"><span className="welcome-number">01 / START WITH A PHOTO</span>
-            <h2>Start with <br />what’s here<span>.</span></h2>
-            <p>Point your camera or choose a photo.<br />Start with the objects and words in front of you.</p>
-            <div className="start-actions"><button className="primary" aria-label="Use camera" disabled={busy} onClick={startCamera}><Camera size={22} /> Open camera <ArrowUpRight size={20} /></button>
-            <button className="upload-btn" aria-label="Upload a photo" disabled={busy} onClick={() => fileInput.current?.click()}><ImageUp size={20} /> Choose a photo</button></div>
-            <span className="welcome-note"><ShieldCheck size={16} /> No account needed. Photos stay on your device.</span>
-            <details className="demo-guide"><summary>First time? Try a study task.</summary><button disabled={busy} onClick={() => void (async () => {
-              try {
-                const response = await fetch('/demo/study-notes.png', { signal: AbortSignal.timeout(15000) })
-                if (!response.ok) throw new Error('The example is unavailable. Choose your own photo or try again.')
-                await selectImage(new File([await response.blob()], 'example-study-notes.png', { type: 'image/png' }))
-              } catch (error) { setImageError(errorMessage(error)) }
-            })()}>Try example study notes</button></details>
-            </div>
-            <div className="mascot-welcome"><div className="mascot-orbit"><Mascot /></div><span className="mascot-greeting">Hi, I’m Ling!</span><p>A little perspective. A useful next step.</p></div>
-          </div>}
+            manualTags={manualTags} onTagSelect={editTag} placingTag={placingTag} onCancelTag={() => setPlacingTag(false)} onPlaceTag={point => { setPlacingTag(false); setTagDraft({ id: crypto.randomUUID(), source: 'user', label: '', point }) }} /> : <HomeDashboard key={revision.current} busy={busy} onCamera={startCamera} onChoose={() => fileInput.current?.click()} onFile={selectImage} onError={setImageError} />}
         </div>
         <input ref={fileInput} id="image-upload" className="visually-hidden" type="file" accept="image/jpeg,image/png,image/webp,image/bmp" disabled={loadingImage}
           aria-label="Upload an image" onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void selectImage(file) }} />

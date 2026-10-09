@@ -1,0 +1,97 @@
+/* Camera-first home, inspired by the supplied Ling dashboard reference. */
+body:has(.everyday-app.is-home) { background: radial-gradient(ellipse at 98% 88%, #e7defb 0, transparent 35%), radial-gradient(ellipse at 0 45%, #f2f6dd 0, transparent 26%), #fcfcfa; }
+.everyday-app.is-home .site-header { background: linear-gradient(110deg, #252232 8%, #3b2c60 65%, #594183); box-shadow: 0 9px 35px #3e26530a; }
+.everyday-app.is-home .page-intro { display: block; text-align: center; padding: 30px 0 10px; }
+.everyday-app.is-home .page-intro .eyebrow { justify-content: center; font-size: 10px; letter-spacing: 1.8px; }
+.everyday-app.is-home .page-intro h1 { font-size: clamp(32px, 3.65vw, 51px); letter-spacing: -2px; line-height: 1.2; margin: 14px 0 9px; }
+.everyday-app.is-home .page-intro h1 em { color: #7950e4; }
+.everyday-app.is-home .page-intro .dashboard-subtitle { color: #69627b; font-size: 16px; line-height: 1.7; margin: 0; }
+.everyday-app.is-home .viewfinder { background: none; border: 0; overflow: visible; border-radius: 0; }
+.everyday-app .welcome.dashboard-home { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) minmax(0, 1fr); align-items: center; gap: 20px 32px; padding: 15px 16px 0; animation: none; }
+.dashboard-home .dashboard-ling { position: relative; margin: 0; align-self: center; }
+.dashboard-home .ling-thought { position: relative; align-self: flex-end; border-radius: 21px 21px 21px 5px; padding: 14px 38px 14px 18px; background: #fff; color: #30233e; font-size: 16px; font-weight: 600; line-height: 1.5; transform: rotate(-7deg); box-shadow: 0 8px 26px #57426d0a; }
+.ling-thought svg { position: absolute; right: 13px; top: 14px; color: #8a6f15; }
+.ling-thought-arrow { align-self: flex-end; color: #9c8bb4; margin: 6px 15px -11px 0; transform: rotate(52deg); }
+.dashboard-home .mascot-orbit { width: 222px; height: 222px; background: none; box-shadow: none; }
+.dashboard-home .mascot-orbit .ling-mascot { width: 222px; height: 222px; }
+.dashboard-home .mascot-greeting { margin-top: 4px; padding: 0; background: none; transform: rotate(-5deg); font-size: 20px; }
+.everyday-app .dashboard-home .mascot-welcome p { font-size: 13px; line-height: 1.55; margin: 13px 0 0; }
+.dashboard-capture { display: flex; flex-direction: column; align-items: center; min-width: 0; border: 2px dashed transparent; border-radius: 35px; padding: 20px 6px 3px; position: relative; }
+.dashboard-capture.is-dragging { background: #eee7ff; border-color: #7650c4; }
+.camera-orbit { width: 282px; height: 282px; border-radius: 50%; padding: 14px; position: relative; background: #fff; box-shadow: 0 0 0 17px #e8defb99, 0 0 0 33px #f1ebfc88, 0 0 75px 5px #c3aff775; margin: 7px 0 29px; }
+.camera-orbit::before { content: ''; position: absolute; inset: -32px; border: 2px solid transparent; border-right-color: #9c74ee; border-radius: 50%; transform: rotate(30deg); pointer-events: none; }
+.camera-orbit .camera-launch { width: 100%; height: 100%; border-radius: 50%; background: radial-gradient(circle at 40% 25%, #3c3647, #252131 72%); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; box-shadow: inset 0 0 0 14px #5a488269, 0 6px 24px #37254f21; transition: transform .2s ease, box-shadow .2s ease; }
+.camera-orbit .camera-launch:hover:not(:disabled) { transform: scale(1.025); box-shadow: inset 0 0 0 14px #7862a675, 0 8px 35px #674c8040; }
+.camera-orbit .camera-launch:focus-visible { outline: 4px solid #583192; outline-offset: 18px; }
+.camera-launch strong { font-size: 19px; font-weight: 650; margin-top: 8px; }
+.camera-launch > span { color: #e6dfef; font-size: 12px; }
+.orbit-spark { position: absolute; width: 8px; height: 30px; background: #c7ed63; border-radius: 10px; top: -21px; right: 4px; transform: rotate(29deg); }
+.orbit-spark-two { top: 3px; right: -19px; height: 23px; transform: rotate(71deg); }
+.dashboard-upload { display: flex; flex-direction: column; align-items: center; gap: 13px; width: 100%; }
+.dashboard-home .upload-btn { display: flex; justify-content: center; align-items: center; gap: 10px; width: max-content; max-width: 100%; min-height: 50px; padding: 13px 21px; border: 1px solid #e4dced; border-radius: 17px; background: #fff; color: #30283f; font-size: 14px; font-weight: 650; box-shadow: 0 5px 25px #48316407; margin: 0; }
+.dashboard-home .upload-btn:hover:not(:disabled) { background: #f1ecfb; border-color: #ba9ce8; }
+.drop-hint { display: flex; align-items: center; gap: 7px; font-size: 12px; color: #6a5a7b; }
+.file-hint { font-size: 10px; color: #766981; line-height: 1.6; text-align: center; margin-top: 10px; }
+.dashboard-possibilities { list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px; margin: 0 0 25px; }
+.dashboard-possibilities li { display: flex; align-items: center; gap: 14px; padding: 18px 17px; border: 1px solid #e3eadc; border-radius: 23px; background: #f2f7ed; transform: rotate(-4deg); box-shadow: 0 9px 28px #35462906; }
+.dashboard-possibilities li:nth-child(2) { background: #fffcef; border-color: #eee9d9; transform: rotate(-1deg); }
+.dashboard-possibilities li:nth-child(3) { background: #f3efff; border-color: #e8dffd; transform: rotate(4deg); }
+.possibility-icon { flex-shrink: 0; display: grid; place-items: center; width: 43px; height: 43px; border-radius: 50%; color: #47772b; background: #e7f0dc; }
+.dashboard-possibilities li:nth-child(2) .possibility-icon { color: #8b7017; background: #f8f0d3; }
+.dashboard-possibilities li:nth-child(3) .possibility-icon { color: #7650c3; background: #eae1ff; }
+.dashboard-possibilities strong { display: block; font-size: 13px; font-weight: 700; color: #30273f; line-height: 1.5; }
+.dashboard-possibilities small { display: block; font-size: 11px; color: #63566f; margin-top: 4px; line-height: 1.5; }
+.dashboard-bottom { grid-column: 1 / -1; text-align: center; display: flex; flex-direction: column; align-items: center; margin-top: 0; gap: 8px; }
+.everyday-app .dashboard-home .welcome-note { margin: 0; font-size: 12px; justify-content: center; color: #655975; }
+.dashboard-bottom .welcome-note svg { flex-shrink: 0; color: #8066a4; }
+.dashboard-bottom .demo-guide { margin: 5px 0 0; }
+.dashboard-bottom .demo-guide summary { font-size: 13px; padding: 8px 12px; border-radius: 12px; }
+.dashboard-bottom .demo-guide summary svg { display: inline-block; vertical-align: -3px; color: #7650c3; margin-right: 4px; }
+.dashboard-bottom .demo-guide summary:hover { background: #eee7f8; }
+.dashboard-bottom .demo-guide button { display: flex; align-items: center; justify-content: center; gap: 16px; background: #fff; border: 1px solid #e1d5f1; border-radius: 18px; padding: 10px 15px; font-size: 13px; width: 100%; margin: 5px 0 10px; text-align: left; }
+.dashboard-bottom .demo-guide img { border-radius: 8px; border: 1px solid #ebe7ee; object-fit: cover; }
+.example-status { font-size: 12px; color: #655975; }
+.everyday-app.is-home footer { margin: 18px 0 4px; border-top: 1px solid #e6deef; padding-top: 12px; }
+@media (min-width: 1000px) { .dashboard-home .dashboard-ling { padding-right: 20px; } }
+@media (max-width: 1050px) and (min-width: 761px) {
+  .everyday-app .welcome.dashboard-home { gap: 20px; padding: 24px 0 0; grid-template-columns: minmax(0, .85fr) minmax(0, 1.4fr) minmax(0, .85fr); }
+  .camera-orbit { width: 250px; height: 250px; }
+  .dashboard-home .mascot-orbit, .dashboard-home .mascot-orbit .ling-mascot { width: 175px; height: 175px; }
+  .dashboard-home .ling-thought { font-size: 13px; padding: 12px; }
+  .ling-thought svg { display: none; }
+  .dashboard-possibilities li { flex-direction: column; align-items: start; gap: 6px; padding: 13px; }
+}
+@media (max-width: 760px) {
+  .everyday-app.is-home .page-intro { padding: 29px 10px 14px; }
+  .everyday-app.is-home .page-intro h1 { font-size: clamp(30px, 5.5vw, 42px); letter-spacing: -1.4px; margin: 12px 0; }
+  .everyday-app.is-home .page-intro .eyebrow { font-size: 9px; letter-spacing: 1px; }
+  .everyday-app.is-home .page-intro .dashboard-subtitle { font-size: 13px; }
+  .everyday-app .welcome.dashboard-home { display: flex; flex-direction: column; gap: 24px; padding: 10px 12px 0; }
+  .dashboard-home .dashboard-capture { order: 0; width: 100%; padding: 25px 5px 8px; }
+  .camera-orbit { width: 236px; height: 236px; padding: 11px; margin-bottom: 35px; box-shadow: 0 0 0 12px #e8defb99, 0 0 0 25px #f1ebfc88, 0 0 60px #c3aff760; }
+  .camera-orbit::before { inset: -24px; transform: none; }
+  .camera-launch svg { width: 52px; height: 52px; }
+  .camera-launch strong { font-size: 18px; }
+  .dashboard-home .dashboard-ling { order: 2; margin: 0; width: 100%; }
+  .dashboard-home .mascot-orbit, .dashboard-home .mascot-orbit .ling-mascot { width: 144px; height: 144px; }
+  .dashboard-home .ling-thought, .ling-thought-arrow { display: none; }
+  .dashboard-home .mascot-greeting { font-size: 18px; }
+  .everyday-app .dashboard-home .mascot-welcome p { margin: 8px 0 0; font-size: 12px; }
+  .dashboard-possibilities { order: 3; flex-direction: row; gap: 7px; width: 100%; margin: 0; }
+  .dashboard-possibilities li { flex: 1; min-width: 0; flex-direction: column; align-items: center; padding: 12px 7px; gap: 8px; text-align: center; border-radius: 18px; transform: none !important; }
+  .dashboard-possibilities strong { font-size: 11px; }
+  .dashboard-possibilities small { font-size: 10px; }
+  .possibility-icon { width: 34px; height: 34px; }
+  .possibility-icon svg { width: 19px; height: 19px; }
+  .dashboard-bottom { order: 1; width: 100%; gap: 3px; }
+  .everyday-app .dashboard-home .welcome-note { font-size: 10px; align-items: center; }
+  .dashboard-bottom .demo-guide summary { font-size: 12px; padding: 8px 4px; }
+  .dashboard-bottom .demo-guide button { gap: 9px; padding: 10px; }
+  .everyday-app.is-home footer { margin-top: 26px; }
+}
+@media (max-width: 360px) {
+  .camera-orbit { width: 209px; height: 209px; }
+  .camera-launch > span { font-size: 10px; }
+  .dashboard-bottom .demo-guide img { width: 46px; height: 40px; }
+  .dashboard-bottom .demo-guide button { font-size: 12px; }
+}

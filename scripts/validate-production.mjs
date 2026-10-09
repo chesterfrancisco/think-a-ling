@@ -13,7 +13,7 @@ const root = fileURLToPath(new URL('../', import.meta.url))
 const dist = resolve(root, 'dist')
 const config = JSON.parse(await readFile(resolve(root, 'vercel.json'), 'utf8'))
 const manifest = JSON.parse(await readFile(resolve(dist, 'ai/manifest.json'), 'utf8'))
-const { chromium } = process.argv[2] ? await import(pathToFileURL(resolve(process.argv[2])).href) : await import('playwright')
+const { chromium } = process.argv[2] ? await import(pathToFileURL(resolve(process.argv[2])).href) : await import('playwright-core')
 const report = { checks: [], predictions: [], externalRequests: [], nonReadRequests: [], pageErrors: [] }
 await mkdir(resolve(root, 'test-results'), { recursive: true })
 const mime = { '.html': 'text/html', '.js': 'text/javascript', '.mjs': 'text/javascript', '.css': 'text/css', '.wasm': 'application/wasm', '.json': 'application/json', '.svg': 'image/svg+xml', '.ttf': 'font/ttf', '.gz': 'application/gzip' }
@@ -87,7 +87,7 @@ try {
   assert.match(response.headers()['content-security-policy'], /connect-src 'self'/)
   await dismissStory(page)
   assert.equal(await page.evaluate(() => window.testStreams.length), 0)
-  assert.match(await page.locator('.runtime-strip').innerText(), /optional on-device AI answers/i)
+  assert.equal(await page.getByRole('button', { name: 'Use camera', exact: true }).isVisible(), true)
   const ready = () => page.waitForFunction(() => {
     const stage = document.querySelector('.viewfinder')
     return stage?.dataset.detectionStatus === 'done' && stage?.dataset.ocrStatus === 'done'
@@ -98,6 +98,7 @@ try {
   }
   const start = Date.now()
   await upload('cats-and-dogs.jpg')
+  assert.match(await page.locator('.runtime-strip').innerText(), /optional on-device AI answers/i)
   report.coldDetectionAndOcrMs = Date.now() - start
   assert.equal(await page.locator('.image-preview svg rect').count(), 4)
   report.predictions = await page.locator('.detection-hotspot').allTextContents()

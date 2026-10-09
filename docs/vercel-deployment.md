@@ -28,19 +28,20 @@ npm.cmd ci
 npm.cmd run build
 npm.cmd run lint
 npm.cmd test
-npm.cmd run test:production -- C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+npm.cmd run test:production
 npm.cmd run preview -- --host 127.0.0.1 --port 4173 --strictPort
 ```
 
-On this machine a preview may already be running; use that process instead of starting a conflicting one. On another machine substitute its installed Playwright path. `test:production` starts/stops its own local static server and applies Vercel headers; Vite preview alone does not apply those headers.
+On this machine a preview may already be running; use that process instead of starting a conflicting one. Browser tests use the locked Playwright Core dependency and an installed Chrome browser; no machine-specific package path is required. `test:production` starts/stops its own local static server and applies Vercel headers; Vite preview alone does not apply those headers.
 
 With production preview running, focused checks:
 
 ```powershell
-node scripts/run-browser-check.mjs validate-resilience C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
-node scripts/run-browser-check.mjs validate-pockets-layout C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
-node scripts/run-browser-check.mjs validate-settings C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
-node scripts/run-browser-check.mjs validate-simple-answers C:/Users/chest/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules/playwright/index.mjs
+node scripts/run-browser-check.mjs validate-dashboard
+node scripts/run-browser-check.mjs validate-resilience
+node scripts/run-browser-check.mjs validate-pockets-layout
+node scripts/run-browser-check.mjs validate-settings
+node scripts/run-browser-check.mjs validate-simple-answers
 ```
 
 `validate-settings` also needs the existing local dev server on port 5173. It runs real detection/OCR and uses recorded model responses to verify that the language selected in Settings reaches the local reasoning request. This is not a language-accuracy test. `validate-offline-reasoning` performs an actual model run and is optional when another hardware/model/offline regression check is needed; do not rerun it for copy changes.
@@ -84,9 +85,11 @@ Use the existing Think-a-ling project and `./` directory. The command publishes.
 
 The 2026-10-10 free-app revision passes build, lint, 55 unit tests and focused Chrome 153 browser checks. Tested: navbar at 1440/390/320px, centered Ling, local save/reopen/delete, persistent accessibility/language settings, keyboard focus restoration, no language selector in the analysis card, and Filipino/English preferences reaching local reasoning request prompts using recorded responses. The complete offline reload/OCR/edit/rescan/404 suite passes with zero Axe violations across home, Settings, Settings with larger text, OCR/recall and photo editor. The production camera/upload/hotspot smoke also passes. No Supabase SDK or public key is present in the application bundle; no account requests occurred. These checks do not establish model language fluency.
 
-The public test checks the current free-app workflow and is reproducible with `node scripts/run-browser-check.mjs validate-hosted <playwright-path>`.
+The public test checks the current free-app workflow and is reproducible with `node scripts/run-browser-check.mjs validate-hosted`.
 
-- Latest answer/tag refinement: build and lint pass; **55 unit tests** pass. The production main bundle is about 524 KB; a >500 KB chunk warning remains.
+- Dashboard redesign: the supplied reference informs the central camera, Ling illustration, soft purple/lime background, supporting cards and retained study example. Real drag-and-drop uses the existing image validation and inference pipeline. `validate-dashboard` checks five viewport widths, keyboard example activation, failed-download retry, file chooser, multi-file/unsupported drop rejection, actual OCR/detection and reduced motion; tested home screens have zero Axe violations. No profile/login or unsupported HEIC recognition was added.
+- Judge setup: an isolated source copy with no local environment file completed a fresh `npm ci`, build, lint and all 55 unit tests. Its dev server opened and ran real study-example OCR; the local proxy guard and installed `gemma3:4b` were checked. The documented `npm run test:production` also passed there using only locked dependencies and the installed Chrome browser. This did not rerun a Gemma generation benchmark. README now includes prerequisites, local Ollama setup, browser-only preview, product workflow, offline reproduction and troubleshooting.
+- Latest answer/tag refinement: build and lint pass; **55 unit tests** pass. The production main bundle is about 528 KB; a >500 KB chunk warning remains.
 - Hosting/offline copy review: build, lint and all 55 unit tests pass again. About and How to distinguish first downloads, local inference, offline preparation and device saves. Dialogs fit 1440/390/320px; the focused browser check reports no page errors and no Axe violations on About/Help. The study example remains available and offline controls remain in Settings.
 - `validate-simple-answers` runs real example OCR and object detection. It verifies label editing, exact-tag removal/Undo, fullscreen, photo reset, cancelled stale answers, next-prompt rejection notes, collapsible AI status/evidence/history, save/feedback/Ask again and responsive layouts. The vision worker is simulated for these UI lifecycle checks, not used as evidence of model quality. The answer screen has zero Axe violations in the tested viewport.
 - Production smoke: actual four-animal detections, real English OCR, boxes/hotspots at 1280/390/320px; file-backed camera live fullscreen, capture/review/retake and track cleanup; no unexpected external requests, image uploads or page errors.

@@ -2,36 +2,111 @@
 
 **Point at anything. Know what to do.**
 
-Your world. Full of possibilities. Think-a-ling! is an Everyday Action Intelligence app that helps you understand, use, fix and improve what's around you, with Ling as your guide.
+Think-a-ling! is an Everyday Action Intelligence app that helps people understand, use, fix and improve what's around them. Capture a photo, inspect objects and text, work toward a goal, and keep useful discoveries with Ling.
 
-**[Try the free web app](https://think-a-ling.vercel.app/)** · No account required.
+**[Public demo](https://think-a-ling.vercel.app/)** · Free to use · No account or API key required.
 
-## What you can do
+## Run locally — judges and new users
 
-- Capture or choose a photo, inspect detected objects and read English text.
-- Explore, Find, Fix or Improve with a question about your goal. Optional on-device AI provides experimental answers on compatible hardware.
-- Correct or remove mistaken tags, add a missing tag, and crop or adjust a photo before trying again.
-- Find a detail in recognized text, practice recalling a line and save useful discoveries in **Saved**. Saves contain text and evidence, not the photo, and stay in this browser.
-- Adjust reading, motion and answer-language preferences in **Settings**.
+### 1. Get the app
 
-For a quick example, open **First time? Try a study task.** on the dashboard. The sample is an input image; Ling reads it locally each time.
+Install **[Node.js 24](https://nodejs.org/en/download)** and Git. Use a recent desktop Chrome or Edge for the tested browser path. Windows was tested; the commands also work in macOS/Linux terminals, but those platforms have not been independently validated.
 
-## Online website, local AI
+```sh
+git clone https://github.com/chesterfrancisco/think-a-ling.git
+cd think-a-ling
+npm ci
+npm run build
+npm run lint
+npm test
+```
 
-Vercel hosts the website and downloads. Object detection and text reading run on your device. Optional **SmolVLM 500M** reasoning also runs in the browser using WebGPU after a separate model download of about 374 MB. No cloud inference API or photo upload is used.
+The repository includes detection/OCR assets and the browser-model files, so the checkout is several hundred MB. Initial cloning and dependency installation need internet. Build checks model, WASM, OCR worker and language-file hashes. No XAMPP, PHP, database, Supabase configuration or `.env` file is required.
 
-The local development app preserves **Gemma 3 4B through Ollama** for deeper reasoning, supported recommendations and Ling Steps. The public website cannot access that local model. Checklist completion is marked by the user, not verified by AI.
+### 2. Start local Gemma
 
-**Offline use is optional.** The first visit and downloads need internet. Prepare **Offline downloads** in Settings before losing connectivity to reopen the app and use detection, English text reading and saved notes in the same browser. Browser reasoning needs its separate model download and compatible hardware. Browser storage can be cleared or evicted; local Gemma still needs the local app and Ollama running.
+Install **[Ollama](https://ollama.com/download)** on the same computer. Start the Ollama app. If its server is not already running, use `ollama serve` in a separate terminal and leave it running.
 
-## Prototype limits
+```sh
+ollama pull gemma3:4b
+ollama list
+```
 
-Detections can miss or mislabel objects; OCR can misread text. SmolVLM answers can invent details or be unhelpful and are not equivalent to Gemma. English is the main tested path; Filipino answers and local voice are experimental. Broad phone/browser compatibility and reliable voice transcription are not established. This is not a safety or medical assessment.
+Keep the exact model name **gemma3:4b**; this app is configured for it. It is a local text-and-image model with an approximately 3.4 GB download, plus additional memory needed while running. Our installed version is Ollama 0.40.2 with model ID `68ceab7e468a`; the upstream tag can change. CPU answers can take a minute or more. See the [official model entry](https://ollama.com/library/gemma3:4b).
 
-## Built with
+### 3. Open the full local app
 
-React · TypeScript · Vite · MediaPipe / EfficientDet-Lite0 · Tesseract.js / English data · Transformers.js / SmolVLM / ONNX Runtime / WebGPU · Ollama / Gemma · browser on-device speech (experimental) · Vercel. Developed with AI-assisted coding tools.
+From the repository folder:
 
-Technical details: [deployment and validation](docs/vercel-deployment.md), [offline tests, demo and risks](docs/offline-accounts-risk-review.md), [browser-model results](docs/browser-ai-validation.md). Model asset sources and hashes are recorded in [the detection/OCR manifest](public/ai/manifest.json) and [the browser-AI manifest](public/ai/browser-reasoning.json).
+```sh
+npm run dev
+```
+
+Open **http://localhost:5173/**. Leave both Vite and Ollama running. Detection and English text reading work even when Ollama is unavailable; deeper local analysis requires it.
+
+The local request path is `browser → Vite /local-ollama/api/chat → 127.0.0.1:11434 → Gemma`. This proxy is restricted to localhost. Do not use `--host 0.0.0.0`, expose Ollama publicly, or expect another device's browser to reach this computer's local model.
+
+## Try the workflow
+
+1. **Open camera** and capture/review a frame, or **Choose a photo** / drop one into the dashboard. For a reproducible input, expand **First time? Try a study task.** and select **Try example study notes**.
+2. Objects and English text appear automatically. Tap a marker, correct/remove a mistaken tag, or open **Read text**. The example contains “Photosynthesis uses light to make food.” Check OCR against the image.
+3. Choose **Analyze photo**, then Explore, Find, Fix or Improve for your goal, or **Ask This Space**. Follow-up questions reuse the current scene. Check evidence and uncertainty; model answers may be wrong.
+4. In the local Gemma app, eligible recommendations offer **Turn into steps**. Checked steps mean user-marked completion, not AI-verified physical changes.
+5. Choose **Save this**, then **Saved** to revisit or delete text and evidence. Photos are not saved. Saves stay in this browser/origin; localhost and the public website have separate libraries.
+
+Try your own clear English note after the example: read a detail, find a keyword, practice recall and save it. Text search and verbatim recall are ordinary app tools using real OCR output; they are not generated explanations.
+
+## Browser-only build and offline reproduction
+
+To run the same type of build as the public website, without Ollama:
+
+```sh
+npm run build
+npm run preview -- --host 127.0.0.1 --port 4173 --strictPort
+```
+
+Open **http://127.0.0.1:4173/**. The production preview intentionally has **no Gemma proxy**. For experimental browser answers, open Ask This Space, choose **Enable on-device AI**, and wait for the approximately **374 MB** SmolVLM model/runtime download and initialization. This needs compatible WebGPU hardware; detection and text reading remain available without it.
+
+For a signal-loss demonstration:
+
+1. While connected, open **Settings → Offline downloads → Prepare for offline** and wait for ready (about 75 MiB for the app, detection and English OCR). Browser reasoning requires its separate download above.
+2. Disable networking in browser developer tools and reload the same URL. Choose another image, run detection/text reading, save and revisit a discovery.
+3. For a physical Wi-Fi-off demo, prepare first and rehearse on the presentation device. A first visit without downloaded files cannot work. Browser storage can be evicted or cleared; a new build may need preparation again.
+
+The localhost Gemma path also works without cloud inference once dependencies/assets/model are installed, with Vite and Ollama still running. Offline preparation is for reopening the production web app; it is separate from saving notes.
+
+## Why local AI matters
+
+A student with unreliable connectivity can read a photographed note, locate a useful detail and revisit saved material after the connection disappears. Personal photos and recognized text remain on the device. Repeated inference does not require a cloud AI account or a per-request cloud API call. Hardware speed and answer quality still matter; local does not automatically mean faster or more accurate.
+
+**Local AI categories:** local vision models, local LLMs, offline AI after preparation, privacy-preserving AI, and AI on a user's PC/laptop. Browser speech is experimental and is not a verified core demo. Phone compatibility is not established across devices.
+
+**Product category:** Personal assistants / Productivity, demonstrated through an Education task. Computer vision is the enabling technology. Accessibility controls and privacy support the experience; this is not a validated assistive-navigation, healthcare or autonomous-agent product.
+
+## Checks and troubleshooting
+
+`npm run build`, `npm run lint` and `npm test` run from the repository root. Current unit tests: **55**. With Chrome installed, the production browser smoke test uses the Playwright Core package already included in the locked test dependencies:
+
+```sh
+npm run test:production
+```
+
+If Chrome is absent, install it first ([browser installation guide](https://playwright.dev/docs/browsers#installing-google-chrome--microsoft-edge)). The test runs real detection/OCR and a file-backed camera test, not a real-webcam or model-quality benchmark. Further checks and deployment commands: [technical guide](docs/vercel-deployment.md).
+
+| If this happens | What to do |
+| --- | --- |
+| Gemma is unavailable | Keep Ollama running; confirm `ollama list` includes `gemma3:4b`; use `npm run dev` on port 5173. |
+| Port 5173/4173 is occupied | Use the already-running app or stop your own conflicting process before retrying. |
+| Browser AI is unsupported or slow | Try a compatible desktop Chrome/Edge, or use local Gemma. Reading text/detection do not need WebGPU. |
+| Camera is denied | Grant permission on localhost/HTTPS or choose a photo. |
+| Image will not open | Use JPEG/PNG/WebP/BMP, at most 20 MB and 25 megapixels. HEIC/PDF are not supported. |
+| An AI asset is missing | Restore committed assets; `npm run setup:ai` prepares detection/OCR, and `node scripts/prepare-browser-ai.mjs` prepares browser reasoning. Downloads require internet. |
+| An offline copy is old | Reconnect, close old app tabs, reopen and prepare the new version. Do not clear site data if you need device saves. |
+
+## Limits and technology
+
+Detection can miss or mislabel objects. OCR targets printed English. SmolVLM answers can invent details or be unhelpful; Gemma is also fallible. Filipino answers and on-device English speech are experimental; reliable physical-microphone transcription, broad phone support and other languages are not established. This is not a safety or medical assessment. Full details: [model results](docs/browser-ai-validation.md) and [offline, accessibility and risk review](docs/offline-accounts-risk-review.md).
+
+React · TypeScript · Vite · MediaPipe / EfficientDet-Lite0 · Tesseract.js / English data · Transformers.js / SmolVLM / ONNX Runtime / WebGPU · Ollama / Gemma · experimental browser speech · Vercel hosting. Developed with AI-assisted coding tools. Asset sources, versions and hashes: [detection/OCR manifest](public/ai/manifest.json), [browser AI manifest](public/ai/browser-reasoning.json).
 
 Created by **Chester Francisco** for the **AppBuildersPH Local AI Hackathon 2026**.

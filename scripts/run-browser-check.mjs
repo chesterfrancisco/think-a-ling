@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url'
 
 const suite = process.argv[2] || 'validate-milestone1'
 if (!/^[a-z0-9-]+$/.test(suite)) throw new Error('Invalid suite name')
-const { chromium } = process.argv[3] ? await import(pathToFileURL(resolve(process.argv[3])).href) : await import('playwright')
+const { chromium } = process.argv[3] ? await import(pathToFileURL(resolve(process.argv[3])).href) : await import('playwright-core')
 const { default: validate } = await import(pathToFileURL(resolve('scripts', suite + '.js')).href)
 await mkdir('test-results', { recursive: true })
 const browser = await chromium.launch({ channel: 'chrome', headless: true })
