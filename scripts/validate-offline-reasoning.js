@@ -9,9 +9,11 @@ export default async function validateOfflineReasoning(page) {
   const enable = async () => { await tab.getByRole('button', { name: 'Enable on-device AI', exact: true }).click(); await tab.waitForFunction(() => document.querySelector('.browser-ai-setup')?.textContent.includes('On-device AI ready') || document.querySelector('.browser-ai-setup [role=alert]'), null, { timeout: 180000 }); assert.match(await tab.locator('.browser-ai-setup').innerText(), /On-device AI ready/) }
   try {
     await tab.goto('http://127.0.0.1:4173'); await dismissStory(tab)
+    await tab.getByRole('button', { name: 'Settings', exact: true }).click()
     await tab.locator('.offline-setup summary').click(); await tab.waitForFunction(() => !!navigator.serviceWorker.controller)
     await tab.getByRole('button', { name: /Prepare for offline/ }).click()
     await tab.waitForFunction(() => document.querySelector('.offline-setup summary')?.textContent.includes('Offline pack ready'), null, { timeout: 120000 })
+    await tab.getByRole('button', { name: 'Close settings' }).click()
     await tab.locator('input[type=file]').setInputFiles('test-images/desk.jpg'); await ready()
     await tab.getByRole('button', { name: 'Explore this photo', exact: true }).click(); await enable()
     await context.setOffline(true)

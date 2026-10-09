@@ -2,31 +2,6 @@ import { useEffect, useRef, useState } from 'react'
 import { Bookmark, Trash2, X } from 'lucide-react'
 import { clearPockets, deletePocket, readPockets, savePocket } from '../services/pockets'
 import type { Pocket, PocketDraft } from '../services/pockets'
-import { cloudPockets, removeCloudPocket, uploadPocket, useAccount } from '../services/account'
-
-function AccountHistory({ local }: { local: Pocket[] }) {
-  const [records, setRecords] = useState<Pocket[]>([])
-  const [busy, setBusy] = useState(false)
-  const [message, setMessage] = useState('Choose Refresh account history to load your synced discoveries.')
-  const [error, setError] = useState(false)
-  const active = useRef(true)
-  useEffect(() => { active.current = true; return () => { active.current = false } }, [])
-  async function run(work: () => Promise<void>, success: string) {
-    setBusy(true); setError(false)
-    try { await work(); const next = await cloudPockets(); if (active.current) { setRecords(next); setMessage(success) } }
-    catch (e) { if (active.current) { setError(true); setMessage(e instanceof Error ? e.message : 'Account sync failed.') } }
-    finally { if (active.current) setBusy(false) }
-  }
-  return <section className="account-history"><h3>My account</h3><p>Only discoveries you choose to sync are uploaded. This sends their text and evidence to your account, not the photo. Internet is required.</p>
-    <button disabled={busy} onClick={() => void run(async () => {}, 'Account history refreshed.')}>Refresh account history</button>
-    <p role={error ? 'alert' : 'status'} className={error ? 'error' : ''}>{busy ? 'Connecting to your account…' : message}</p>
-    {!!local.length && <details><summary>Choose device discoveries to sync</summary>{local.map(p => <div className="sync-entry" key={p.id}><span>{p.title}</span><button disabled={busy || records.some(r => r.id === p.id)} onClick={() => void run(() => uploadPocket(p), 'Discovery synced to your account.')}>Sync this discovery</button></div>)}</details>}
-    {records.map(p => <details className="pocket-entry" key={p.id}><summary>{p.title}<small>{p.source} · {new Date(p.savedAt).toLocaleString()}</small></summary><p className="pocket-content">{p.content}</p><details><summary>Evidence & uncertainty</summary>{p.caveats.map((c, i) => <p key={i}>{c}</p>)}{p.evidence.map(e => <p key={e.id}>{e.id} · {e.source} · {e.kind}: {e.description}</p>)}</details>
-      <button disabled={busy} onClick={() => { try { savePocket(p); setMessage('A copy was saved on this device.'); setError(false) } catch (e) { setError(true); setMessage(String(e)) } }}>Keep on this device</button>
-      <button className="danger-action" disabled={busy} onClick={() => void run(() => removeCloudPocket(p.id), 'Removed from account history. Device copies remain.')}>Delete account copy</button>
-    </details>)}
-  </section>
-}
 
 export function SaveDiscovery({ draft }: { draft: PocketDraft }) {
   const [message, setMessage] = useState('')
@@ -37,7 +12,6 @@ export function SaveDiscovery({ draft }: { draft: PocketDraft }) {
 }
 
 export function LingPockets() {
-  const { session } = useAccount()
   const dialog = useRef<HTMLDialogElement>(null)
   const [items, setItems] = useState<Pocket[]>([])
   const [error, setError] = useState('')
@@ -56,7 +30,7 @@ export function LingPockets() {
     <dialog ref={dialog} className="help-dialog pockets-dialog" aria-labelledby="pockets-title">
       <button className="sheet-close" aria-label="Close saved discoveries" onClick={() => dialog.current?.close()}><X size={20} /></button>
       <span className="sheet-kicker">LING POCKETS</span><h2 id="pockets-title">Keep a useful discovery.</h2>
-      <p>On this device: saved by you, without automatic history. Anyone using this browser profile can read these notes; clearing site data removes them. Account copies are separate and require explicit sync.</p>
+      <p>On this device: saved by you, without automatic history. Anyone using this browser profile can read these notes; clearing site data removes them.</p>
       {error && <p role="alert">{error}</p>}
       {!items.length && !error && <p className="empty">Nothing saved yet. Choose Save this on recognized text, a scene summary or an answer.</p>}
       {items.map(item => <details className="pocket-entry" key={item.id}><summary>{item.title}<small>{new Date(item.savedAt).toLocaleString()} · {item.source}</small></summary>
@@ -65,6 +39,5 @@ export function LingPockets() {
         <button aria-label={'Delete saved discovery: ' + item.title} onClick={() => remove(item.id)}><Trash2 size={15} /> Delete</button>
       </details>)}
       {(items.length > 0 || error) && (confirmClear ? <div className="clear-pockets"><p>Delete all saved discoveries from this browser?</p><button onClick={() => remove()}>Delete all saved discoveries</button><button onClick={() => setConfirmClear(false)}>Keep them</button></div> : <button className="clear-pockets" onClick={() => setConfirmClear(true)}>Clear saved discoveries</button>)}
-      {session ? <AccountHistory key={session.user.id} local={items} /> : <p>Want to revisit on another device? Open Account in the navigation to sign in, then choose what to sync.</p>}
     </dialog></>
 }

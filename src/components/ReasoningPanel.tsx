@@ -22,8 +22,10 @@ import { SaveDiscovery } from './LingPockets'
 import { pocketFromTurn } from '../services/pockets'
 import { VoiceInput } from './VoiceInput'
 import { modeForGoal } from '../services/modeRelevance'
+import type { AnswerLanguage } from '../services/preferences'
 
 interface Props {
+  language: AnswerLanguage
   image?: UploadedImage
   detections: DetectedObject[] | null
   ocrText: string | null
@@ -94,14 +96,13 @@ function IntentResult({ turn, scene, stepsState, onStepsChange }: { turn: SceneT
   </article>
 }
 
-export function ReasoningPanel({ image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true, voiceRequest = 0 }: Props) {
+export function ReasoningPanel({ language, image, detections, ocrText, processing, onBuildingChange, onDetections, onOcr, mode, goalRequest, autoBuild = false, onSceneChange, onTurnComplete, corrections, objectFocus, objectLabel, onVoiceMode, visible = true, voiceRequest = 0 }: Props) {
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [scene, setScene] = useState<SceneAnalysis>()
   const correctedScene = useMemo(() => scene ? applyLabelCorrections(scene, corrections) : undefined, [scene, corrections])
   const previousCorrections = useRef(corrections)
   const [goal, setGoal] = useState('')
-  const [language, setLanguage] = useState<'English' | 'Filipino'>('English')
   const [appliedGoal, setAppliedGoal] = useState(goalRequest)
   if (goalRequest !== appliedGoal) {
     setAppliedGoal(goalRequest)
@@ -289,8 +290,6 @@ export function ReasoningPanel({ image, detections, ocrText, processing, onBuild
     {!image && <p className="empty">Choose an image to begin.</p>}
     {scene && <div className="shared-scene">
       <form onSubmit={event => { event.preventDefault(); void ask(correctedScene, questionToSend) }}>
-        <label>Answer language<select value={language} disabled={status === 'loading'} onChange={e => setLanguage(e.target.value as 'English' | 'Filipino')}><option>English</option><option value="Filipino">Filipino / Tagalog · experimental</option></select></label>
-        <details className="language-help"><summary>Prompt and language limits</summary><p>Ask one specific question, up to 500 characters. English is recommended. Filipino is a requested response language, not a guarantee of fluency or accuracy. Cebuano, Arabic, Korean and other languages are not validated. Text reading uses an English OCR pack; voice currently requires an English local speech pack.</p></details>
         <label htmlFor="scene-goal">{mode === 'FIND' ? 'What are you looking for?' : mode === 'FIX' ? 'What would you like to check?' : mode === 'IMPROVE' ? 'What would you like to improve?' : 'Ask about your photo'}</label>
         {mode === 'FIND' && !scene.objects.some(object => object.purposes.length) && <p className="context-note">I can look for visible objects. I may need more detail to tell what they can do.</p>}
         <input id="scene-goal" value={goal} maxLength={500} disabled={status === 'loading'} onChange={event => setGoal(event.target.value)} placeholder={placeholder} />

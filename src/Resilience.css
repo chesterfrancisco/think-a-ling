@@ -1,4 +1,25 @@
 .everyday-app.is-home .page-intro h1 { font-size: clamp(32px, 4.1vw, 55px); }
+.everyday-app .site-header { height: auto; min-height: 82px; margin-top: 18px; padding: 16px 22px; border: 1px solid #604488; border-radius: 24px; background: linear-gradient(115deg, #292137, #563887); color: #fff; gap: 18px; }
+.everyday-app .site-header .brand { color: #fff; }
+.everyday-app .site-header .brand-bang { color: #c7f34b; }
+.everyday-app .site-header .header-tagline { color: #e5d9f8; margin-left: auto; }
+.everyday-app .site-header :is(.saved-nav, .settings-nav, .help-button) { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-width: 44px; min-height: 44px; padding: 10px 12px; border: 1px solid #ffffff35; border-radius: 14px; background: #ffffff12; color: #fff; font-size: 13px; }
+.everyday-app .site-header :is(.saved-nav, .settings-nav, .help-button):hover { background: #ffffff25; }
+.everyday-app .site-header button:focus-visible { outline-color: #d0f778; }
+.settings-dialog { width: min(540px, calc(100vw - 24px)); color: #30273c; }
+.settings-dialog h2 { margin-bottom: 8px; }
+.settings-dialog .sheet-kicker { color: #704597; }
+.settings-dialog .settings-intro { margin-bottom: 22px; color: #645971; }
+.settings-dialog .settings-section { margin: 16px 0; padding: 18px; background: #f7f4fc; border: 1px solid #e1d8ee; border-radius: 18px; }
+.settings-section h3 { display: flex; align-items: center; gap: 9px; font-size: 16px; margin: 0 0 14px; }
+.settings-section h3 svg { flex-shrink: 0; color: #6a479e; }
+.settings-section p, .settings-dialog .settings-footnote { font-size: 12px; line-height: 1.65; color: #665971; }
+.settings-section > label { display: block; font-size: 14px; }
+.settings-section select { width: 100%; min-height: 48px; margin: 8px 0; padding: 10px; border: 1px solid #a99aba; border-radius: 12px; background: #fff; color: #30273c; font: inherit; font-size: 14px; }
+.settings-dialog .accessibility-settings label { display: flex; align-items: center; gap: 10px; padding: 10px 0; }
+.settings-dialog .accessibility-settings input { flex-shrink: 0; margin: 0; accent-color: #7044ae; }
+.settings-dialog .language-help summary { min-height: 44px; display: flex; align-items: center; text-decoration: underline; text-underline-offset: 3px; }
+.settings-dialog .offline-setup { padding: 14px 18px; margin-bottom: 14px; }
 .skip-link { position: fixed; top: -80px; left: 12px; z-index: 3000; padding: 14px; color: #21172d; background: #d4f28c; border-radius: 8px; }
 .skip-link:focus { top: 12px; }
 .account-nav { min-width: 44px; min-height: 44px; display: grid; place-items: center; border-radius: 14px; background: #ede7f6; color: #493562; }
@@ -42,6 +63,9 @@
 button:focus-visible, a:focus-visible, summary:focus-visible, select:focus-visible, input:focus-visible { outline: 3px solid #5a348e; outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
 @media (max-width: 640px) {
+  .everyday-app .site-header { padding: 12px; border-radius: 19px; gap: 6px; margin-top: 12px; min-height: 70px; }
+  .everyday-app .site-header :is(.saved-nav, .settings-nav, .help-button) { padding: 10px; }
+  .settings-nav > span { display: none; }
   .header-tagline { display: none; }
   .saved-nav > span { display: none; }
   .saved-nav { min-width: 44px; justify-content: center; }
@@ -51,4 +75,10 @@ button:focus-visible, a:focus-visible, summary:focus-visible, select:focus-visib
   .camera-tools { flex-wrap: wrap; justify-content: flex-end; }
   .camera-top { gap: 8px; align-items: start; }
   .edit-controls { grid-template-columns: 1fr; }
+}
+@media (max-width: 390px) {
+  .everyday-app .site-header { flex-wrap: wrap; justify-content: center; }
+  .everyday-app .site-header .header-right { margin-left: 0; }
+  .settings-dialog { padding: 24px 16px; }
+  .settings-dialog .settings-section { padding: 14px; }
 }

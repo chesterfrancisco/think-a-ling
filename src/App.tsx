@@ -29,10 +29,9 @@ import { stopBrowserAi, useBrowserAi } from './services/browserAi'
 import { LingPockets, SaveDiscovery } from './components/LingPockets'
 import { pocketFromScene } from './services/pockets'
 import { ModeChoices } from './components/ModeChoices'
-import { OfflineSetup } from './components/OfflineSetup'
-import { AccountPanel } from './components/AccountPanel'
+import { SettingsPanel } from './components/SettingsPanel'
+import { useAnswerLanguage } from './services/preferences'
 import { PhotoEditor } from './components/PhotoEditor'
-import { AccessibilitySettings } from './components/AccessibilitySettings'
 import { TextWorkbench } from './components/TextWorkbench'
 import './Resilience.css'
 
@@ -41,6 +40,7 @@ const emptyDetection: Result<DetectedObject[]> = { status: 'idle', message: '', 
 const emptyOcr: Result<string> = { status: 'idle', message: '', data: '' }
 
 function App() {
+  const [answerLanguage, setAnswerLanguage] = useAnswerLanguage()
   const browserAi = useBrowserAi()
   const localReasoningAvailable = ollamaAvailable || browserAi.status === 'ready'
   const [showStory, setShowStory] = useState(() => !hasSeenStory())
@@ -335,7 +335,7 @@ function App() {
       <span className="header-tagline">A little help. A whole new perspective.</span>
       <div className="header-right">
         <LingPockets />
-        <AccountPanel />
+        <SettingsPanel language={answerLanguage} onLanguageChange={setAnswerLanguage} />
         <button className="help-button" onClick={() => about.current?.showModal()} aria-label="About Think-a-ling"><HelpCircle size={21} /></button>
       </div>
     </header>
@@ -369,7 +369,7 @@ function App() {
             <div className="start-actions"><button className="primary" aria-label="Use camera" disabled={busy} onClick={startCamera}><Camera size={22} /> Open camera <ArrowUpRight size={20} /></button>
             <button className="upload-btn" aria-label="Upload a photo" disabled={busy} onClick={() => fileInput.current?.click()}><ImageUp size={20} /> Choose a photo</button></div>
             <span className="welcome-note"><ShieldCheck size={16} /> No account needed. Photos stay on your device.</span>
-            <details className="demo-guide"><summary>First time? Try a study task.</summary><ol><li>Choose a clear photo of a short English study note.</li><li>Select Read text, find a keyword and practice recalling a line.</li><li>Save the useful text. Open Saved to revisit it.</li></ol><button disabled={busy} onClick={() => void (async () => { try { const response = await fetch('/demo/study-notes.png', { signal: AbortSignal.timeout(15000) }); if (!response.ok) throw new Error('The sample is unavailable. Choose your own study photo.'); await selectImage(new File([await response.blob()], 'example-study-notes.png', { type: 'image/png' })) } catch (e) { setImageError(errorMessage(e)) } })()}>Try example study notes</button><p>Example input only; Ling reads it locally each time. For deeper questions, enable on-device AI or use local Gemma. Compare answers with the source.</p></details></div>
+            </div>
             <div className="mascot-welcome"><div className="mascot-orbit"><Mascot /></div><span className="mascot-greeting">Hi, I’m Ling!</span><p>A little perspective. A useful next step.</p></div>
           </div>}
         </div>
@@ -413,7 +413,7 @@ function App() {
             detection.data.map((item, index) => discoveryKey(item) === goalRequest.objectKey ?
               <button key={index} className="discovery-return" onClick={() => selectObject(item, index)}>View {objectDisplayName(item, detection.data, corrections)} discovery <ArrowUpRight size={15} /></button> : null)}
           <ReasoningPanel key={image?.url ?? 'no-image'} image={image} mode={mode} goalRequest={goalRequest} autoBuild={autoBuild} corrections={corrections}
-            onVoiceMode={setMode} visible={panelOpen} voiceRequest={voiceRequest}
+            language={answerLanguage} onVoiceMode={setMode} visible={panelOpen} voiceRequest={voiceRequest}
             objectFocus={objectFocus} objectLabel={objectFocus ? objectDisplayName(objectFocus, detection.data, corrections) : undefined}
             onSceneChange={setSceneSnapshot}
             onTurnComplete={(turn, key) => {
@@ -430,7 +430,6 @@ function App() {
       {sceneSnapshot && <ModeChoices scene={sceneSnapshot} mode={mode} goal={goalRequest?.text} onSelect={name => { setMode(name); setObjectFocus(undefined); setGoalRequest(undefined); openQuestion() }} />}
       {image && <button className="floating-ask" aria-label={panelOpen ? 'Close chat' : 'Ask This Space'} aria-expanded={panelOpen} aria-controls="ask-panel" onClick={() => { if (panelOpen) setPanelOpen(false); else openQuestion() }}><Mascot thinking={sceneBuilding} /><span>{panelOpen ? 'Close chat' : 'Ask This Space'}</span>{panelOpen ? <X size={19} /> : <ArrowUpRight size={19} />}</button>}
       {summaryNotice && sceneSnapshot && <div className="summary-ready-notice" role="status"><button onClick={() => { setDismissedSummaryId(sceneSnapshot.id); summary.current?.focus({ preventScroll: true }); summary.current?.scrollIntoView({ block: 'start', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' }) }}><ArrowDown size={20} /><span><strong>HERE'S THE PICTURE</strong><small>Your photo summary is ready. View below.</small></span></button><button aria-label="Dismiss summary notice" onClick={() => setDismissedSummaryId(sceneSnapshot.id)}><X size={17} /></button></div>}
-      <OfflineSetup /><AccessibilitySettings />
       <footer><span>Think-a-ling! · AppBuildersPH Hackathon Prototype · 2026</span></footer>
       {!image && !cameraOpen && <button className="replay-story" onClick={() => setShowStory(true)}>Meet Ling again</button>}
     </main>
@@ -459,7 +458,7 @@ function App() {
       <p>Created by <strong>Chester Francisco</strong> as an <strong>AppBuildersPH Local AI Hackathon 2026</strong> entry, developed within 24 hours using local AI. This is a hackathon prototype, with room to learn and improve.</p>
       <h3>Built with local AI</h3>
       <p>React, Vite, and TypeScript power the interface. MediaPipe EfficientDet-Lite0 detects objects and Tesseract.js reads text in your browser. In the local development app, Gemma 3 4B through Ollama provides deeper reasoning on the same computer.</p>
-      <p>The public website supports browser detection, text reading, and optional experimental SmolVLM 500M answers through Transformers.js and WebGPU. It cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI or cloud photo storage is used. Optional Supabase accounts sync only the saved text and evidence you explicitly choose; account actions require internet.</p>
+      <p>The public website supports browser detection, text reading, and optional experimental SmolVLM 500M answers through Transformers.js and WebGPU. It cannot access the developer’s local Gemma model. Predictions can be incomplete or mistaken. No cloud AI or cloud photo storage is used. The app is free to use without an account. Saved discoveries stay in this browser.</p>
       <button className="primary" onClick={() => { about.current?.close(); help.current?.showModal() }}>How to use Think-a-ling <ArrowUpRight size={18} /></button>
     </dialog>
     <dialog ref={help} className="help-dialog navigation-help" aria-labelledby="help-title">
@@ -472,8 +471,8 @@ function App() {
       <p>Detection and OCR run in your browser. On the public site, open Ask This Space and select Enable on-device AI to download approximately 374 MB of model files from this site. Experimental SmolVLM answers then run on your device using WebGPU. It can miss or invent details. Follow-up questions reuse the saved description and recognized text. Structured action checklists and grounded study cards remain in the local app with Gemma through Ollama. Neither mode is a safety or medical assessment.</p>
       <p>Use live camera for periodic on-device detection. Expand camera opens fullscreen while keeping the controls and measured boxes. Capture freezes a frame and stops the camera. Review it, then retake or analyze it. Camera access requires HTTPS or localhost and your permission. Front/rear selection depends on your device.</p>
       <p>Experimental local voice requires a compatible browser, its English language pack and microphone permission. Enable local voice, install the pack if offered, then speak. Review the transcript and selected mode before sending. No cloud speech fallback is used. Language-pack downloads are managed by your browser and require internet. Filipino support was unavailable in the tested browser.</p>
-      <p>Save this keeps text and supporting evidence in this browser. Open Saved to revisit or delete it. Account sign-in, when configured, lets you explicitly sync selected text and evidence across devices. Photos are not uploaded. Clearing site data removes device copies; anyone using the same browser profile can access them.</p>
-      <p>Before going offline, open Use Think-a-ling offline and complete Prepare for offline. It downloads the app, detection and English OCR files for offline reload. Optional SmolVLM reasoning needs its separate model download and compatible hardware. Accounts, sync and first downloads need internet. Browsers can evict stored files; check offline readiness before your demo. Hosting still receives normal page and asset requests.</p>
+      <p>Save this keeps text and supporting evidence in this browser. Open Saved to revisit or delete it. No sign-in or cloud sync is needed. Saved discoveries stay on this device; photos are not uploaded. Clearing site data removes device copies; anyone using the same browser profile can access them.</p>
+      <p>Before going offline, open Settings, expand Offline downloads and complete Prepare for offline. It downloads the app, detection and English OCR files for offline reload. Optional SmolVLM reasoning needs its separate model download and compatible hardware. First downloads need internet. Browsers can evict stored files; check offline readiness before your demo. Hosting still receives normal page and asset requests.</p>
       <button className="primary" onClick={() => help.current?.close()}>Let’s explore <ArrowUpRight size={18} /></button>
     </dialog>
     {editing && image && <PhotoEditor image={image} onClose={() => setEditing(false)} onApply={file => void selectImage(file)} />}

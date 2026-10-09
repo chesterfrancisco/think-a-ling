@@ -6,7 +6,7 @@ export function OfflineSetup() {
   const [busy, setBusy] = useState(false)
   const [progress, setProgress] = useState(0)
   const [size, setSize] = useState(100)
-  const [message, setMessage] = useState('Prepare once with internet. Then reopen this app, detect objects and read English text offline.')
+  const [message, setMessage] = useState('Download the app, object detection and English text-reading files for offline use. Optional AI needs its own model download.')
   const [error, setError] = useState(false)
   const worker = useRef<ServiceWorker | undefined>(undefined)
   useEffect(() => {
@@ -31,12 +31,12 @@ export function OfflineSetup() {
     }).catch(() => { if (active) { setError(true); setMessage('Offline setup is unavailable in this browser. Keep this page open or try a regular browser window.') } })
     return () => { active = false; navigator.serviceWorker.removeEventListener('message', receive); window.removeEventListener('online', changed); window.removeEventListener('offline', changed) }
   }, [])
-  return <details className="offline-setup"><summary>{online ? ready ? 'Offline pack ready' : 'Use Think-a-ling offline' : 'You’re offline'} {!online && <WifiOff size={16} />}</summary>
+  return <details className="offline-setup"><summary>{online ? ready ? 'Offline pack ready' : 'Offline downloads' : 'You’re offline'} {!online && <WifiOff size={16} />}</summary>
     <p className={error ? 'error' : ready ? 'success-notice' : ''} role="status">{message}</p>
-    {import.meta.env.DEV ? <p>Use the production preview to prepare offline reload. Local Gemma continues to need the local app and Ollama running.</p> : !('serviceWorker' in navigator) ? <p className="warning-notice">This browser cannot prepare offline reload. Keep this page open or use a browser with service-worker support.</p> : <>
+    {import.meta.env.DEV ? <p>Offline downloads are available on the public website.</p> : !('serviceWorker' in navigator) ? <p className="warning-notice">This browser cannot prepare offline reload. Keep this page open or use a browser with service-worker support.</p> : <>
       {!ready && <button disabled={busy || !online} onClick={() => { if (!worker.current) { setError(true); setMessage('Offline setup is still starting. Try again shortly.'); return } setError(false); setBusy(true); setProgress(0); worker.current.postMessage({ type: 'offline-prepare' }) }}><Download size={16} /> Prepare for offline · {size} MB</button>}
       {busy && <><progress value={progress} max={100} aria-label="Offline download progress" /><span>{progress}% of files ready</span><button className="danger-action" onClick={() => worker.current?.postMessage({ type: 'offline-cancel' })}>Cancel download</button></>}
     </>}
-    <p>Account sign-in and sync need internet. Browser storage can be cleared or evicted; recheck this status before the demo. Your photos are not part of this download.</p>
+    <p>Browser storage can be cleared or evicted. Recheck readiness before going offline. Photos are not included in this download.</p>
   </details>
 }

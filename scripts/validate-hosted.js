@@ -6,20 +6,23 @@ export default async function validateHosted(page) {
   const report = { checks: [], errors: [], url: 'https://think-a-ling.vercel.app/' }
   const context = await page.context().browser().newContext(), tab = await context.newPage()
   tab.on('pageerror', e => report.errors.push(e.message))
+  const accountRequests = []
+  context.on('request', r => { if (r.url().includes('supabase.co')) accountRequests.push(r.url()) })
   const ready = () => tab.waitForFunction(() => document.querySelector('.viewfinder')?.dataset.ocrStatus === 'done' && document.querySelector('.viewfinder')?.dataset.detectionStatus === 'done', null, { timeout: 120000 })
   try {
     const response = await tab.goto(report.url); assert.equal(response.status(), 200); await dismissStory(tab)
-    assert.match(response.headers()['content-security-policy'], /supabase/)
-    await tab.getByRole('button', { name: 'Account', exact: true }).click()
-    assert(await tab.getByRole('button', { name: 'Sign in', exact: true }).isVisible())
-    assert(!await tab.getByText('Accounts are not connected on this deployment yet.', { exact: false }).count())
-    await tab.getByRole('button', { name: 'Close account' }).click()
-    await tab.locator('.demo-guide summary').click()
-    await tab.getByRole('button', { name: 'Try example study notes', exact: true }).click(); await ready()
+    assert.match(response.headers()['content-security-policy'], /connect-src 'self';/)
+    assert.equal(await tab.getByRole('button', { name: 'Account', exact: true }).count(), 0)
+    assert.equal(await tab.locator('.demo-guide, main .offline-setup, main .accessibility-settings').count(), 0)
+    await tab.getByRole('button', { name: 'Settings', exact: true }).click()
+    await tab.getByLabel('Answer language', { exact: true }).selectOption('Filipino')
+    await tab.getByRole('button', { name: 'Close settings' }).click()
+    await tab.locator('input[type=file]').setInputFiles('public/demo/study-notes.png'); await ready()
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     await tab.locator('.text-workbench input[type=search]').fill('Photosynthesis')
     assert.match(await tab.locator('.text-workbench [role=status]').innerText(), /uses light to make food/i)
     await tab.getByRole('button', { name: 'Close text', exact: true }).click()
+    await tab.getByRole('button', { name: 'Settings', exact: true }).click()
     await tab.locator('.offline-setup summary').click()
     await tab.waitForFunction(() => !!navigator.serviceWorker.controller)
     await tab.getByRole('button', { name: /Prepare for offline/ }).click()
@@ -33,7 +36,8 @@ export default async function validateHosted(page) {
     assert.equal(await tab.locator('.detection-hotspot').count(), 4)
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     assert.deepEqual(report.errors, [])
-    report.checks.push('Live HTTPS page with Supabase CSP and configured account form; actual study example OCR and keyword lookup', 'Real hosted offline pack downloaded and hash-verified; full offline reload processes a new image with four detections and OCR completion', 'Hosted missing page returns HTTP 404 with Ling; no page errors')
+    assert.deepEqual(accountRequests, [])
+    report.checks.push('Live free app without account requests; navbar Settings works; actual uploaded study notes OCR and keyword lookup', 'Real hosted offline pack downloaded and hash-verified; full offline reload processes a new image with four detections and OCR completion', 'Hosted missing page returns HTTP 404 with Ling; no page errors')
   } catch (error) { report.failure = error.stack; report.screen = (await tab.locator('body').innerText()).slice(-2500) }
   finally { await context.close() }
   return report
