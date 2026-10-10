@@ -41,11 +41,10 @@
 .settings-dialog .offline-setup { padding: 14px 18px; margin-bottom: 14px; }
 .skip-link { position: fixed; top: -80px; left: 12px; z-index: 3000; padding: 14px; color: #21172d; background: #d4f28c; border-radius: 8px; }
 .skip-link:focus { top: 12px; }
-.account-nav { min-width: 44px; min-height: 44px; display: grid; place-items: center; border-radius: 14px; background: #ede7f6; color: #493562; }
 .everyday-app footer { color: #665d70; }
-.account-dialog input, .account-dialog select, .text-workbench input, .reasoning-panel select { width: 100%; padding: 12px; border: 1px solid #c1b6d0; border-radius: 10px; background: white; color: #30273c; margin: 6px 0 12px; font: inherit; }
-.account-dialog label, .edit-controls label { display: block; margin: 12px 0; }
-.account-dialog button:not(.sheet-close), .offline-setup button, .photo-editor button:not(.sheet-close), .text-workbench button, .account-history button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 12px; padding: 10px 14px; margin: 8px 8px 8px 0; background: #e8dff6; color: #403050; }
+.text-workbench input, .reasoning-panel select { width: 100%; padding: 12px; border: 1px solid #c1b6d0; border-radius: 10px; background: white; color: #30273c; margin: 6px 0 12px; font: inherit; }
+.edit-controls label { display: block; margin: 12px 0; }
+.offline-setup button, .photo-editor button:not(.sheet-close), .text-workbench button { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; border-radius: 12px; padding: 10px 14px; margin: 8px 8px 8px 0; background: #e8dff6; color: #403050; }
 .everyday-app button.danger-action, .everyday-app .quick-progress button { background: #a92335; color: #fff; border: 1px solid #8e1e2d; }
 .error, .cancel-notice { color: #891e2c; background: #fff0f1; border-left: 4px solid #b12939; padding: 12px; border-radius: 8px; }
 .success-notice, .everyday-app .answer-ready { color: #275c22; background: #edf7e5; padding: 9px; border-radius: 8px; }
@@ -64,9 +63,6 @@
 .photo-editor canvas { display: block; max-width: 100%; max-height: 42vh; margin: 16px auto; border-radius: 12px; object-fit: contain; }
 .edit-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 20px; }
 .edit-controls input { display: block; width: 100%; min-height: 30px; accent-color: #7250b1; }
-.account-history { margin-top: 28px; padding-top: 20px; border-top: 1px solid #d4cadf; }
-.sync-entry { border-bottom: 1px solid #eee; padding: 12px 0; overflow-wrap: anywhere; }
-.sync-entry span { display: block; }
 .text-workbench { margin-top: 24px; border-top: 1px solid #ddd; padding-top: 18px; }
 .text-workbench details { padding: 10px 0; }
 .text-workbench summary, .language-help summary { cursor: pointer; }

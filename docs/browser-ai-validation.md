@@ -1,6 +1,6 @@
 # Experimental public browser reasoning
 
-> Follow-up: [offline/account risk review](offline-accounts-risk-review.md) records a successful full offline reload with real SmolVLM inference, and a generic answer failure now rejected by an output guard. Earlier unverified-offline statements below describe the original test run.
+> Follow-up: [offline and risk review](offline-risk-review.md) records a successful full offline reload with real SmolVLM inference, and a generic answer failure now rejected by an output guard. Earlier unverified-offline statements below describe the original test run.
 
 Implemented and tested 2026-10-09. Public production builds now offer **Enable AI to analyze → Enable on-device AI → download and prepare → Analyze photo**. Detection and OCR stay usable without enabling this feature. Existing development-only Gemma/Ollama integration is unchanged.
 

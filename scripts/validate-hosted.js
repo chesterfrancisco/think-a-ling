@@ -1,13 +1,13 @@
 import assert from 'node:assert/strict'
 import { dismissStory } from './dismiss-story.js'
 // Uses the real public deployment, real OCR/detector and its offline pack.
-// Does not register accounts, send mail or call a model inference backend.
+// Checks that core tools make no requests to external services.
 export default async function validateHosted(page) {
   const report = { checks: [], errors: [], url: 'https://thinkaling.vercel.app/' }
   const context = await page.context().browser().newContext(), tab = await context.newPage()
   tab.on('pageerror', e => report.errors.push(e.message))
-  const accountRequests = []
-  context.on('request', r => { if (r.url().includes('supabase.co')) accountRequests.push(r.url()) })
+  const externalRequests = []
+  context.on('request', r => { const url = new URL(r.url()); if (/^https?:$/.test(url.protocol) && url.origin !== new URL(report.url).origin) externalRequests.push(url.origin) })
   const ready = () => tab.waitForFunction(() => document.querySelector('.viewfinder')?.dataset.ocrStatus === 'done' && document.querySelector('.viewfinder')?.dataset.detectionStatus === 'done', null, { timeout: 120000 })
   try {
     const response = await tab.goto(report.url); assert.equal(response.status(), 200); await dismissStory(tab)
@@ -41,8 +41,8 @@ export default async function validateHosted(page) {
     assert.equal(await tab.locator('.detection-hotspot').count(), 4)
     await tab.getByRole('button', { name: 'Read text', exact: true }).click()
     assert.deepEqual(report.errors, [])
-    assert.deepEqual(accountRequests, [])
-    report.checks.push('Live free app without account requests; Settings and restored example button work; actual example OCR and keyword lookup', 'Real hosted offline pack downloaded and hash-verified; full offline reload processes a new image with four detections and OCR completion; tag removal and Undo work offline', 'Hosted missing page returns HTTP 404 with Ling; no page errors')
+    assert.deepEqual(externalRequests, [])
+    report.checks.push('Live free app without external requests; Settings and example button work; actual example OCR and keyword lookup', 'Real hosted offline pack downloaded and hash-verified; full offline reload processes a new image with four detections and OCR completion; tag removal and Undo work offline', 'Hosted missing page returns HTTP 404 with Ling; no page errors')
   } catch (error) { report.failure = error.stack; report.screen = (await tab.locator('body').innerText()).slice(-2500) }
   finally { await context.close() }
   return report

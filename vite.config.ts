@@ -1,7 +1,6 @@
 import react from '@vitejs/plugin-react'
-import { defineConfig, loadEnv } from 'vite'
+import { defineConfig } from 'vite'
 import type { Plugin } from 'vite'
-import { validatePublicAccountConfig } from './src/services/publicAccountConfig.js'
 
 // This bridge is never installed in preview or production hosting.
 function localOllamaGuard(): Plugin {
@@ -37,11 +36,7 @@ function localOllamaGuard(): Plugin {
   }
 }
 
-export default defineConfig(({ mode }) => {
-  // Parallel test servers must use an isolated dependency cache (see scripts/serve-account-test.mjs).
-  const env = loadEnv(mode, process.cwd(), 'VITE_')
-  // Fail before Vite can embed an accidentally configured privileged key.
-  validatePublicAccountConfig(env.VITE_SUPABASE_URL, env.VITE_SUPABASE_PUBLISHABLE_KEY)
+export default defineConfig(() => {
   return {
   plugins: [react(), localOllamaGuard()],
   // Worker-only OCR imports are missed by the initial dependency crawl; eager

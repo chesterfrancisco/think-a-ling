@@ -65,7 +65,7 @@ Seven fresh Gemma calls were made: study and label scene+intent pairs, a label p
 - `npm audit --json` and `npm audit --omit=dev --json` both reported **zero known vulnerabilities** on this date. This is registry coverage, not proof of no vulnerabilities.
 - Browser suites reported no external requests/uploads or uncaught page errors. Uploaded images remain browser-local except the explicitly local Ollama image request. The same-origin connection policy is retained, including blocking MediaPipe's external metrics endpoint.
 - React renders user/model strings as text; no added raw HTML execution. File type/size/pixel validation and bounded structured model outputs remain. Label/scene text is treated as untrusted data in prompts. Prompt instructions and schema validation cannot guarantee resistance to all semantic prompt injection or hallucinations.
-- The loopback bridge is a development tool. It has no account authorization, per-user rate limiting or robust local-client isolation. A malicious program already running on the device is outside these browser-origin protections. This was a targeted audit, not a penetration test.
+- The loopback bridge is a development tool. It has no per-user authorization, rate limiting or robust local-client isolation. A malicious program already running on the device is outside these browser-origin protections. This was a targeted audit, not a penetration test.
 
 ## Ease of use
 
@@ -73,9 +73,9 @@ Verified at 1280/390/320 px: intro skip/replay and keyboard navigation; upload/c
 
 This is an engineering walkthrough, **not a usability study with ordinary users**. English-only interface/OCR, small secondary text, inference wait times and overlapping hotspots remain concerns for older users or small screens. Next, give three unfamiliar users one photo task each without coaching. Record whether they can choose a photo, identify the next action, correct a label and find their answer; measure completion time and points of hesitation. Include someone using larger text and someone using a phone.
 
-## Accounts and differentiation
+## Simple workflow and differentiation
 
-Recommendation: **keep core on-device scanning available without sign-in for this MVP**. That suits a hurried user and an older user who just wants to read a label, and preserves offline access. Accounts are useful only when tied to a concrete feature such as optional saved collections or cross-device sync with informed privacy choices. They add account recovery, secure session management, abuse prevention and support obligations; see the [OWASP authentication guidance](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html). A login does not provide a visitor with local Gemma or give a public site access to this laptop's Ollama. No login/freemium gates were implemented.
+The free app opens directly, with useful text and evidence saved in the same browser. Keep on-device scanning and reading easy to reach for a hurried user or someone revisiting a label offline. Local Gemma remains available through the separate local development app and Ollama.
 
 For the hackathon, prioritize a memorable complete task rather than expanding the menu:
 
@@ -83,7 +83,7 @@ For the hackathon, prioritize a memorable complete task rather than expanding th
 2. **A notes-to-study demo:** show one grounded flashcard with its original text and a same-scene follow-up. Show withheld unsupported output honestly, not as a successful extra card.
 3. **Ling as a trustworthy guide:** consistent identity, ordinary-language goals, correctable labels, privacy and visible uncertainty. Let the correction/update/reuse interaction demonstrate technical execution.
 
-The next engineering investment should be a bounded accuracy suite using real intended-user photos and a controlled runtime/model benchmark, including the actual hardware path. Then consider one offline utility such as a local saved discovery card with an explicit delete control. Optional accounts and feature tiers can follow demonstrated demand. These are recommendations, not implemented features or a promise of competition ranking.
+The next engineering investment should be a bounded accuracy suite using real intended-user photos and a controlled runtime/model benchmark, including the actual hardware path. Then consider one offline utility such as a local saved discovery card with an explicit delete control. These are recommendations, not implemented features or a promise of competition ranking.
 
 ## Reproduce and inspect
 
@@ -93,6 +93,6 @@ Fresh passing browser suites: `audit-browser-quality`, `audit-live-scene` (integ
 
 Raw artifacts: `test-results/audit-browser-quality.json`, `audit-live-scene.json`, `shared-scenarios-audit-first.json`, `validate-shared-scenarios.json` (repeat label failure), `security-audit.json`, and the individual suite reports. Screenshots include `fullscreen-markers-mobile.png`, `estimated-progress-audit.png`, `label-text-matches.png`, `live-scene-audit.png` and responsive discovery images. Source fixture provenance is in `test-images/README.md` and the replay fixture metadata.
 
-Main changed files: `App.tsx`, `ImagePreview.tsx`, `ObjectCard.tsx`, `ReasoningPanel.tsx`, `AnalysisProgress.tsx`, `SimpleExperience.css`, `services/objectNames.ts`, `analysisProgress.ts`, `intent.ts`, `types/scene.ts`, and the audit/regression scripts. No deployed-site or account infrastructure changes were made.
+Main changed files: `App.tsx`, `ImagePreview.tsx`, `ObjectCard.tsx`, `ReasoningPanel.tsx`, `AnalysisProgress.tsx`, `SimpleExperience.css`, `services/objectNames.ts`, `analysisProgress.ts`, `intent.ts`, `types/scene.ts`, and the audit/regression scripts. No deployed-site infrastructure changes were made.
 
 **Deployment remains limited:** public production builds run browser detection/OCR only. Local Gemma currently requires the local development app and Ollama. Browser Offline mode blocks even localhost HTTP reasoning, while disconnecting the internet alone can still leave localhost reachable. No public tunnel or shared laptop endpoint was introduced.

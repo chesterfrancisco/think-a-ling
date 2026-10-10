@@ -1,6 +1,6 @@
 # Product improvements and hackathon review
 
-> Historical snapshot. Offline reload and real Supabase integration were added afterward. See [current implementation and acceptance gaps](offline-accounts-risk-review.md).
+> Historical snapshot. Offline reload and other refinements were added afterward. See [current implementation and acceptance gaps](offline-risk-review.md).
 
 Reviewed 2026-10-09 against the six AppBuildersPH slides supplied by the user. This is a readiness assessment, not an official judge score or a claim that every criterion has been met.
 
@@ -47,26 +47,11 @@ An explicit recognized goal takes priority. Otherwise, suggestions follow the sa
 
 For an “octopus wiring” photo, Find is not inherently irrelevant: the person might want to locate a switch or readable rating. It is therefore deprioritized rather than removed. The current detector may not recognize all wiring components, and the small browser model can misinterpret a scene; users can choose another mode. These heuristics are not a safety assessment or a learned classifier. They use available saved-scene context; richer relevance may wait for reasoning while detection/OCR appear progressively.
 
-## Both saved history and real accounts
+## Free app and device-only history
 
-**Implemented now:** device-only saving described above. **Prepared here:** a concrete account/sync design. **Not implemented:** signup, authentication, cloud storage, account-based feature limits or cross-device history. A static Vercel build alone cannot provide secure real accounts and shared storage. No simulated login or passwords in localStorage were added.
+The app opens directly. Choose or capture a photo, inspect detected objects and recognized text, and ask a supported local model a focused question. Save useful text and evidence explicitly, then revisit or delete it in **Saved**.
 
-Recommended product flow:
-
-1. Public landing explains the app and offers **Try on this device**. The guest can use detection, OCR and supported local inference without authentication.
-2. Optional **Create account / Sign in** unlocks future backup and cross-device access. It does not improve model accuracy or make an unsupported phone support WebGPU.
-3. Saved has **On this device** and, when configured and signed in, **My account**. Existing notes stay local until the user explicitly chooses which ones to upload. Original photos are excluded unless a later, separate photo-backup feature is expressly chosen.
-4. Offline use continues with local saves and local inference after required assets are available. Sync waits until connectivity returns; signing out does not silently delete local notes. Account and device deletion are explicit separate actions.
-
-Implementation boundary for the next account milestone:
-
-- Select and configure a managed authentication/database provider in the owner's account. No service was selected or provisioned by this refinement pass. Define allowed login redirects for production and development separately.
-- Add real signup, verified login, recovery, session expiry and signout using that provider. Server-validated identity must enforce record ownership; UI visibility alone cannot secure data or feature entitlements.
-- Store `id`, `owner_id`, `kind`, `title`, `content`, `source`, `photo_name`, `evidence`, `caveats`, `created_at` and `updated_at` in owned discovery records. Keep an explicit sync choice and handle conflicts/errors without overwriting local notes silently.
-- Expose authenticated list/create/update/delete operations protected by ownership checks, and provide account/data deletion. Avoid shipping privileged service credentials to Vite client code.
-- Test two independent users, guest use, expired sessions, denied cross-user reads/deletes, lost connectivity, retries and deletion before offering account features publicly.
-
-Cloud authentication/storage can be secondary components under the supplied rules, while meaningful inference remains local. Requiring an online login before core local AI works would weaken the “cloud disappears” experience. If account limits are introduced, attach them to future sync/storage allowances rather than the ability to inspect a photo offline. Design guidance: [OWASP authentication](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html), [OWASP authorization](https://cheatsheetseries.owasp.org/cheatsheets/Authorization_Cheat_Sheet.html).
+Saved discoveries stay in the same browser profile and origin. They contain text and evidence, not original photos. Offline preparation is a separate action in **Settings** that downloads the app assets; saving a discovery does not prepare offline reload.
 
 ## Criteria assessment
 
@@ -75,10 +60,10 @@ Cloud authentication/storage can be secondary components under the supplied rule
 | Problem & Usefulness | 25% | Recognition and OCR, practical local-Gemma recommendations/steps, saved results that can be revisited without another inference. | “Everyday problems” is broad. Demonstrate a specific user and task, such as a student organizing a desk and returning to a saved action list. No user study or measured task-success rate is claimed. |
 | Local AI Implementation | 25% | Real MediaPipe/Tesseract browser inference; Gemma on the user's computer; optional SmolVLM WebGPU. No photo inference API. Detection/OCR tested on new images after browser networking was disabled. | First page/assets need a connection on the public site; offline reload/PWA is absent. Browser reasoning and speech are not established as fully offline. |
 | Technical Execution | 20% | Build, lint, 48 unit tests, real detection/OCR/camera smoke, object-context regressions, asset hashes and proxy guards. | Small-model hallucinations, slow cold reasoning, failed automated real speech, untested phone hardware and the live Vercel deployment prevent a blanket reliability claim. |
-| Innovation | 15% | Observation → context-sensitive action → evidence-linked steps → saved discovery is a coherent product interaction. Same-scene reuse avoids repeated image inference. | Novelty is for judges to assess. Public SmolVLM does not produce Gemma's validated structured steps, issue assessments or study cards. Extra login screens alone do not demonstrate innovation. |
+| Innovation | 15% | Observation → context-sensitive action → evidence-linked steps → saved discovery is a coherent product interaction. Same-scene reuse avoids repeated image inference. | Novelty is for judges to assess. Public SmolVLM does not produce Gemma's validated structured steps, issue assessments or study cards. |
 | Product & Demo Quality | 15% | Capture review/retake, responsive Ling, fullscreen scanning, manual tags, selected-object isolation, clear saved history and uncertainty. | Prepare a short repeatable demo on tested hardware. Voice needs manual validation; first model download is too large to hide in a live presentation. |
 
-Meaningful local inference and disclosure have evidence. Substantially built during the hackathon is a provenance requirement: the supplied claim and Git history can support the submission, but this review cannot independently certify the event's timing. A live demonstration and final submitted materials are also outside these automated tests. The slides list example technologies, not a requirement to use all of them. Login, every Local AI category and speech models are not mandatory.
+Meaningful local inference and disclosure have evidence. Substantially built during the hackathon is a provenance requirement: the supplied claim and Git history can support the submission, but this review cannot independently certify the event's timing. A live demonstration and final submitted materials are also outside these automated tests. The slides list example technologies, not a requirement to use all of them. Implementing every Local AI category and speech models is not mandatory.
 
 The strongest next demo is one complete, useful task: show a workspace or clear study material, inspect real detections/text, ask a focused question in the local Gemma app, turn an eligible recommendation into Ling Steps, save it, reload, and revisit it. Keep the model's caveats visible. Preload dependencies/models, then demonstrate the specifically verified local behavior with networking disabled. Do not label the whole public site fully offline or claim a model confidence value is measured accuracy.
 

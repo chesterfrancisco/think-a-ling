@@ -7,9 +7,9 @@ export default async function validateSettings(page) {
   const context = await page.context().browser().newContext({ viewport: { width: 1440, height: 1000 } })
   const tab = await context.newPage()
   const fixture = JSON.parse(await readFile(new URL('./fixtures/milestone2-ui-replay.json', import.meta.url), 'utf8'))
-  const report = { checks: [], errors: [], languages: [], accountRequests: [] }
+  const report = { checks: [], errors: [], languages: [], externalRequests: [] }
   tab.on('pageerror', e => report.errors.push(e.message))
-  context.on('request', r => { if (r.url().includes('supabase.co')) report.accountRequests.push(r.url()) })
+  context.on('request', r => { const url = new URL(r.url()); if (/^https?:$/.test(url.protocol) && url.origin !== 'http://localhost:5173') report.externalRequests.push(url.origin) })
   await context.route('**/local-ollama/api/chat', route => {
     const body = route.request().postDataJSON()
     const images = body.messages.flatMap(m => m.images ?? []).length
@@ -51,10 +51,10 @@ export default async function validateSettings(page) {
     await tab.getByRole('button', { name: 'Ask scene', exact: true }).click()
     await tab.waitForFunction(() => document.querySelector('.reasoning-panel')?.getAttribute('aria-busy') === 'false')
     assert.match(report.languages[1], /Write explanations in English/)
-    assert.deepEqual(report.accountRequests, [])
+    assert.deepEqual(report.externalRequests, [])
     assert.deepEqual(report.errors, [])
     report.languages = ['Filipino', 'English']
-    report.checks.push('Settings preferences persist after reload; mobile dialog fits; Escape restores focus; no account requests', 'Language moves out of analysis card and reaches both actual local request prompts; recorded responses used, no accuracy claim')
+    report.checks.push('Settings preferences persist after reload; mobile dialog fits; Escape restores focus; no external requests', 'Language moves out of analysis card and reaches both actual local request prompts; recorded responses used, no accuracy claim')
   } catch (error) { report.failure = error.stack }
   finally { await context.close() }
   return report

@@ -21,7 +21,7 @@ npm run lint
 npm test
 ```
 
-The repository includes detection/OCR assets and the browser-model files, so the checkout is several hundred MB. Initial cloning and dependency installation need internet. Build checks model, WASM, OCR worker and language-file hashes. No XAMPP, PHP, database, Supabase configuration or `.env` file is required.
+The repository includes detection/OCR assets and the browser-model files, so the checkout is several hundred MB. Initial cloning and dependency installation need internet. Build checks model, WASM, OCR worker and language-file hashes. No XAMPP, PHP, database or `.env` file is required.
 
 ### 2. Start local Gemma
 
@@ -85,7 +85,7 @@ A student with unreliable connectivity can read a photographed note, locate a us
 
 ## Checks and troubleshooting
 
-`npm run build`, `npm run lint` and `npm test` run from the repository root. Current unit tests: **55**. With Chrome installed, the production browser smoke test uses the Playwright Core package already included in the locked test dependencies:
+`npm run build`, `npm run lint` and `npm test` run from the repository root. With Chrome installed, the production browser smoke test uses the Playwright Core package already included in the locked test dependencies:
 
 ```sh
 npm run test:production
@@ -105,7 +105,7 @@ If Chrome is absent, install it first ([browser installation guide](https://play
 
 ## Limits and technology
 
-Detection can miss or mislabel objects. OCR targets printed English. SmolVLM answers can invent details or be unhelpful; Gemma is also fallible. Filipino answers and on-device English speech are experimental; reliable physical-microphone transcription, broad phone support and other languages are not established. This is not a safety or medical assessment. Full details: [model results](docs/browser-ai-validation.md) and [offline, accessibility and risk review](docs/offline-accounts-risk-review.md).
+Detection can miss or mislabel objects. OCR targets printed English. SmolVLM answers can invent details or be unhelpful; Gemma is also fallible. Filipino answers and on-device English speech are experimental; reliable physical-microphone transcription, broad phone support and other languages are not established. This is not a safety or medical assessment. Full details: [model results](docs/browser-ai-validation.md) and [offline, accessibility and risk review](docs/offline-risk-review.md).
 
 React · TypeScript · Vite · MediaPipe / EfficientDet-Lite0 · Tesseract.js / English data · Transformers.js / SmolVLM / ONNX Runtime / WebGPU · Ollama / Gemma · experimental browser speech · Vercel hosting. Developed with AI-assisted coding tools. Asset sources, versions and hashes: [detection/OCR manifest](public/ai/manifest.json), [browser AI manifest](public/ai/browser-reasoning.json).
 

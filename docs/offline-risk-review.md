@@ -1,6 +1,6 @@
 # Offline experience, accessibility and risk review
 
-**Current free-app workflow:** choose or capture a photo, inspect objects or text, ask an optional on-device question, and explicitly save useful text in this browser. No login, registration or cloud sync is part of this workflow. Accessibility, language and optional offline preparation live in navbar **Settings**. **Need inspiration?** offers five sample pictures with editable questions. Users can correct or remove mistaken tags and undo removals; removed tags cannot supply detection evidence to new questions.
+**Current free-app workflow:** choose or capture a photo, inspect objects or text, ask an optional on-device question, and explicitly save useful text in this browser. The app opens directly and saved discoveries stay in this browser. Accessibility, language and optional offline preparation live in navbar **Settings**. **Need inspiration?** offers five sample pictures with editable questions. Users can correct or remove mistaken tags and undo removals; removed tags cannot supply detection evidence to new questions.
 
 Updated 2026-10-10. This is the current status; earlier milestone reports describe earlier builds.
 
@@ -26,7 +26,7 @@ The About dialog states the distinction briefly. How to explains preparation; Se
 
 ## Current acceptance workflow
 
-Photo or camera → real detections/text → inspect, correct or retry → useful result → Save this → revisit or delete in Saved. No account is required. Previous account code and migration remain dormant; backend records are untouched. Historical account tests are not evidence for the current workflow.
+Photo or camera → real detections/text → inspect, correct or retry → useful result → Save this → revisit or delete in Saved. No account is required. Saved text and evidence remain in this browser profile and origin; clearing site data removes them.
 
 ## A focused two-minute demonstration
 

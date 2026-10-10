@@ -14,8 +14,13 @@ dist-ssr
 .vercel/
 test-results/
 *.local
-.env
-.env.*
+.env*
+*.pem
+*.key
+*.p12
+*.pfx
+credentials*.json
+*service-account*.json
 # Keep local editor workspace settings out of the shared repository.
 thing-a-ling.code-workspace
 
@@ -29,9 +34,3 @@ thing-a-ling.code-workspace
 *.njsproj
 *.sln
 *.sw?
-
-.vercel
-.env*
-
-.env*
-!.env.example
